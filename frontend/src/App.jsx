@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// import { useState } from 'react'
+import Home from './pages/Home.jsx'
+import AdminLoginPage from './pages/AdminLogin.jsx'
+import UserSignUpPage from './pages/UserSignup.jsx'
+import UserLoginPage from './pages/UserLogin.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
+import UserManagementPage from './pages/AdminUserManagement.jsx'
+import RoomManagementPage from './pages/AdminRoomManagement.jsx'
+import BookingManagementPage from './pages/AdminBookingManagement.jsx'
+import VendorRequestPage from './pages/AdminVendorRequests.jsx'
+import AuthSuccess from './components/AuthSuccess.jsx'
+import { Routes, Route } from 'react-router-dom';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/signup" element={<UserSignUpPage />} />
+      <Route path="/login" element={<UserLoginPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/users" element={<UserManagementPage />} />
+      <Route path="/admin/rooms" element={<RoomManagementPage />} />
+      <Route path="/admin/bookings" element={<BookingManagementPage />} />
+      <Route path="/admin/requests" element={<VendorRequestPage />} />
+      <Route path="/auth-success" element={<AuthSuccess />} />
+    </Routes>
+)
 }
-
 export default App
