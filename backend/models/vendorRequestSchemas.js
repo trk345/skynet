@@ -15,7 +15,7 @@ const requestSchema = new Schema({
     trim: true,
     minlength: [2, 'First name must be at least 2 characters'],
     maxlength: [50, 'First name too long'],
-    match: [/^[a-zA-Z]+$/, 'First name can only contain letters']
+    match: [/^[a-zA-Z\s'-]+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes']
   },
   lastName: {
     type: String,
@@ -23,7 +23,7 @@ const requestSchema = new Schema({
     trim: true,
     minlength: [2, 'Last name must be at least 2 characters'],
     maxlength: [50, 'Last name too long'],
-    match: [/^[a-zA-Z]+$/, 'Last name can only contain letters']
+   match: [/^[a-zA-Z\s'-]+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes']
   },
   email: {
     type: String,

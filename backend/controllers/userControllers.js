@@ -28,7 +28,7 @@ const postVendorRequest = async (req, res) => {
         const { firstName, lastName, email, mobile, message } = req.body;
   
         if (!firstName || !lastName || !email || !mobile || !message) {
-            return res.status(400).json({ error: "Message is required" });
+            return res.status(400).json({ error: "All fields (firstName, lastName, email, mobile, message) are required" });
         }
   
         // Update user's pending status
