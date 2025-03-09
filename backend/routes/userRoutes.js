@@ -3,6 +3,7 @@ const {
     getNotifs,
     putReadNotifs,
     getUnreadNotifCount,
+    postVendorRequest,
 } = require('../controllers/userControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
@@ -13,6 +14,9 @@ const limiter = rateLimit({
     max: 100, // Limit each IP to 100 requests per windowMs
     message: 'Too many requests from this IP, please try again later.'
   });
+
+// Post Vendor Request
+router.post("/postVendorRequest", limiter, postVendorRequest);
 
 // Get all notifications (without authentication middleware)
 router.get('/notifications', limiter, getNotifs);

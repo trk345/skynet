@@ -77,7 +77,7 @@ const AdminLogin = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition duration-300 mb-4"
+              className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition duration-300 mb-4 cursor-pointer"
             >
               Login
             </button>

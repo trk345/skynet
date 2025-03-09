@@ -1,9 +1,9 @@
 const express = require('express');
 const {
     getUsers,
-    postVendorRequests,
+    // postVendorRequest,
     getVendorRequests,
-    updateVendorRequests,
+    updateVendorRequest,
 } = require('../controllers/adminControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
@@ -19,8 +19,8 @@ const limiter = rateLimit({
 router.get('/getUsers', limiter, getUsers);
 router.get("/getVendorRequests", limiter, getVendorRequests);
 
-router.post("/postVendorRequests", limiter, postVendorRequests);
+// router.post("/postVendorRequest", limiter, postVendorRequest);
 
-router.put("/updateVendorRequests", limiter, updateVendorRequests);
+router.put("/updateVendorRequest", limiter, updateVendorRequest);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const { User } = require('../models/userSchemas');
+const { VendorRequest } = require('../models/vendorRequestSchemas');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
@@ -14,6 +15,47 @@ const verifyUser = (req, res) => {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 };
+
+// Secure route: Post Vendor Requests
+const postVendorRequest = async (req, res) => {
+    const session = await mongoose.startSession(); // Start transaction session
+    session.startTransaction();
+    
+    try {
+        const userId = verifyUser(req, res);
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        const requesterID = userId;
+        const { firstName, lastName, email, mobile, message } = req.body;
+  
+        if (!firstName || !lastName || !email || !mobile || !message) {
+            return res.status(400).json({ error: "All fields (firstName, lastName, email, mobile, message) are required" });
+        }
+  
+        // Update user's pending status
+        await User.findByIdAndUpdate(requesterID, { pendingStatus: "pending" }, { session });
+  
+        // Save vendor request
+        const newRequest = new VendorRequest({ 
+          requesterID, 
+          firstName, 
+          lastName, 
+          email, 
+          mobile, 
+          message 
+        });
+        await newRequest.save({ session }); // Ensure transaction consistency
+  
+        await session.commitTransaction();
+        res.status(201).json({ message: "Message saved successfully!", data: newRequest });
+  
+    } catch (error) {
+        await session.abortTransaction(); // Rollback on error
+        console.error("Error saving request", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    } finally {
+        session.endSession(); // Clean up session
+    }
+  };
 
 // Get unread notification count
 const getUnreadNotifCount = async (req, res) => {
@@ -64,8 +106,10 @@ const putReadNotifs = async (req, res) => {
     }
 };
 
+
 module.exports = {
     putReadNotifs,
     getNotifs,
-    getUnreadNotifCount
+    getUnreadNotifCount, 
+    postVendorRequest,
 };

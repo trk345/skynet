@@ -101,11 +101,17 @@ const Navbar = () => {
             <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
             <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">Bookings</Link>
             <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">About</Link>
-            <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">Contact</Link>
 
             {!isLoggedIn ? (
               <Link to="/login" className="text-gray-700 hover:text-blue-600">Login</Link>
             ) : (
+              <>
+              {user?.role === "user" && (
+                      isPending || user?.pendingStatus === "pending" ? (
+                        <span className="text-gray-400">Processing Request...</span>
+                      ) : (
+              <Link to="/contact" className="text-gray-700 hover:text-blue-600" >Contact</Link> ) 
+              )}
               <div ref={dropdownRef} className="relative inline-block">
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-700">Hello, {user?.username || "User"}</span>
@@ -120,7 +126,7 @@ const Navbar = () => {
                 </div>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                    {user?.role === "user" && (
+                    {/* {user?.role === "user" && (
                       isPending || user?.pendingStatus === "pending" ? (
                         <button className="block w-full text-left px-4 py-2 text-gray-500 bg-gray-100 cursor-not-allowed" disabled>
                           Processing Request
@@ -133,7 +139,7 @@ const Navbar = () => {
                           Send Request
                         </button>
                       )
-                    )}
+                    )} */}
                     <button
                       onClick={() => {
                         handleLogout();
@@ -146,6 +152,7 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
+              </>
             )}
           </nav>
         </div>
