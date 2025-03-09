@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Users, Check, X } from "lucide-react";
+import { Users, Check, X, Eye } from "lucide-react";
 import SideBar from "../components/adminSideBar.jsx";
 import TopBar from "../components/adminTopbar.jsx";
 import axios from "axios";
@@ -8,6 +8,8 @@ import { RequestContext } from "../context/RequestContext"; // Import context
 const VendorRequestPage = () => {
   const [requests, setRequests] = useState([]);
   const { setRequestCount } = useContext(RequestContext); // Get global state
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -36,7 +38,7 @@ const VendorRequestPage = () => {
   const handleAction = async (requestId, action) => {
     try {
       const response = await axios.put(
-        "http://localhost:4000/api/admin/updateVendorRequests",
+        "http://localhost:4000/api/admin/updateVendorRequest",
         { requestId, action },
         { withCredentials: true } // Enable credentials
       );
@@ -44,10 +46,16 @@ const VendorRequestPage = () => {
       if (response.status === 200) {
         setRequests((prevRequests) => prevRequests.filter((req) => req._id !== requestId));
         setRequestCount((prevCount) => Math.max(prevCount - 1, 0));
+        setShowDetailsModal(false);
       }
     } catch (error) {
       console.error("Error updating request:", error);
     }
+  };
+
+  const openDetailsModal = (request) => {
+    setSelectedRequest(request);
+    setShowDetailsModal(true);
   };
 
   return (
@@ -71,7 +79,7 @@ const VendorRequestPage = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase text-center"></th>
                 </tr>
               </thead>
@@ -85,19 +93,13 @@ const VendorRequestPage = () => {
                         {request.requesterID.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4">{request.message}</td>
-                    <td className="px-6 py-4 flex justify-center space-x-2">
+                    {/* <td className="px-6 py-4">{request.message}</td> */}
+                    <td className="px-6 py-4 flex justify-center">
                       <button
-                        className="text-green-600 hover:text-green-800 cursor-pointer"
-                        onClick={() => handleAction(request._id, "approve")}
+                        className="flex items-center justify-center px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors cursor-pointer"
+                        onClick={() => openDetailsModal(request)}
                       >
-                        <Check size={20} />
-                      </button>
-                      <button
-                        className="text-red-600 hover:text-red-800 cursor-pointer"
-                        onClick={() => handleAction(request._id, "reject")}
-                      >
-                        <X size={20} />
+                        View Details <Eye size={16} className="ml-2" />
                       </button>
                     </td>
                   </tr>
@@ -107,8 +109,81 @@ const VendorRequestPage = () => {
           </div>
         </div>
       </div>
+
+       {/* Details Modal - Now with transparent backdrop */}
+       {showDetailsModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200">
+            {/* Header */}
+            <div className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h3 className="text-lg font-semibold text-gray-800">Request Details</h3>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 bg-white">
+              <div className="space-y-6">
+                {/* Name row */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+                    <p className="text-gray-900 font-medium">{selectedRequest.firstName || "N/A"}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+                    <p className="text-gray-900 font-medium">{selectedRequest.lastName || "N/A"}</p>
+                  </div>
+                </div>
+                
+                {/* Contact info */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                    <p className="text-gray-900 font-medium">{selectedRequest.email}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Mobile</label>
+                    <p className="text-gray-900 font-medium">{selectedRequest.mobile || "N/A"}</p>
+                  </div>
+                </div>
+                
+                {/* Message */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">Message</label>
+                  <div className="bg-white p-3 rounded border border-gray-200 max-h-32 overflow-y-auto">
+                    <p className="text-gray-800 whitespace-pre-line">{selectedRequest.message}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer actions */}
+            <div className="px-6 py-4 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors font-medium cursor-pointer"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors flex items-center font-medium cursor-pointer"
+                onClick={() => handleAction(selectedRequest._id, "reject")}
+              >
+                <X size={16} className="mr-1" /> Decline
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors flex items-center font-medium cursor-pointer"
+                onClick={() => handleAction(selectedRequest._id, "approve")}
+              >
+                <Check size={16} className="mr-1" /> Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}      
     </div>
   );
 };
+
+
 
 export default VendorRequestPage;

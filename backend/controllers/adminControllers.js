@@ -34,7 +34,7 @@ const getUsers = async (req, res) => {
 
 const getVendorRequests = async (req, res) => {
   try {
-    const requests = await VendorRequest.find().populate("requesterID", "username email role");
+    const requests = await VendorRequest.find().populate("requesterID", "username email role"); // Find all vendor requests and populate the requesterID field with corr. requester details
     
     res.status(200).json({ success: true, data: requests }); // ✅ Standardized Response
   } catch (error) {
@@ -56,41 +56,48 @@ const getVendorRequests = async (req, res) => {
 // };
 
 
-// Secure route: Post Vendor Requests
-const postVendorRequests = async (req, res) => {
-  const session = await mongoose.startSession(); // Start transaction session
-  session.startTransaction();
+// // Secure route: Post Vendor Requests
+// const postVendorRequest = async (req, res) => {
+//   const session = await mongoose.startSession(); // Start transaction session
+//   session.startTransaction();
   
-  try {
-      const requesterID = req.user.userId; // Extract user ID from authenticated token
-      const { message } = req.body;
+//   try {
+//       const requesterID = req.user.userId; // Extract user ID from authenticated token
+//       const { firstName, lastName, email, mobile, message } = req.body;
 
-      if (!message) {
-          return res.status(400).json({ error: "Message is required" });
-      }
+//       if (!firstName || !lastName || !email || !mobile || !message) {
+//           return res.status(400).json({ error: "Message is required" });
+//       }
 
-      // Update user's pending status
-      await User.findByIdAndUpdate(requesterID, { pendingStatus: "pending" }, {session});
+//       // Update user's pending status
+//       await User.findByIdAndUpdate(requesterID, { pendingStatus: "pending" }, { session });
 
-      // Save vendor request
-      const newRequest = new VendorRequest({ requesterID, message });
-      await newRequest.save({ session }); // Ensure transaction consistency
+//       // Save vendor request
+//       const newRequest = new VendorRequest({ 
+//         requesterID, 
+//         firstName, 
+//         lastName, 
+//         email, 
+//         mobile, 
+//         message 
+//       });
+//       await newRequest.save({ session }); // Ensure transaction consistency
 
-      await session.commitTransaction();
-      res.status(201).json({ message: "Message saved successfully!", data: newRequest });
+//       await session.commitTransaction();
+//       res.status(201).json({ message: "Message saved successfully!", data: newRequest });
 
-  } catch (error) {
-      await session.abortTransaction(); // Rollback on error
-      console.error("Error saving request", error);
-      res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-      session.endSession(); // Clean up session
-  }
-};
+//   } catch (error) {
+//       await session.abortTransaction(); // Rollback on error
+//       console.error("Error saving request", error);
+//       res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//       session.endSession(); // Clean up session
+//   }
+// };
 
 
 
-const updateVendorRequests = async (req, res) => {
+const updateVendorRequest = async (req, res) => {
   const { requestId, action } = req.body;
   const adminUser = req.user; // Get logged-in user from JWT middleware
   let session;
@@ -157,7 +164,7 @@ const updateVendorRequests = async (req, res) => {
 
 module.exports = {
   getUsers,
-  postVendorRequests,
+  // postVendorRequest,
   getVendorRequests,
-  updateVendorRequests,
+  updateVendorRequest,
 };

@@ -36,7 +36,7 @@ const requestSchema = new Schema({
       message: 'Invalid email format'
     }
   },
-  mobileNumber: {
+  mobile: {
     type: String,
     required: true,
     // unique: true,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Send, Building, Mail, Phone, MessageSquare, User } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import axios from 'axios';
 
 const Contact = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -30,8 +31,11 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const response = await axios.post("http://localhost:4000/api/user/postVendorRequest", 
+      formData, { withCredentials: true });
+
     console.log('Form submitted:', formData);
     // Reset form after submission
     setFormData({
