@@ -59,6 +59,23 @@ const userSchema = new Schema({
   },
   approvedVendors: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 
+  properties: [{
+    type: Schema.Types.ObjectId, 
+    ref: 'Property'
+  }],
+  reviewsGiven: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+    rating: { type: Number, min: 1, max: 5 },
+    comment: { type: String, trim: true, maxlength: 500 },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  bookings: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+  }],
+  favorites: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+  }],
+
 }, { timestamps: true });
 
 

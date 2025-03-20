@@ -1,6 +1,8 @@
 // import { useState } from 'react'
 import Home from './pages/Home.jsx'
 import Contact from './pages/Contact.jsx'
+import CreateProperty from './pages/PropertyCreation.jsx'
+import PropertyDetails from './pages/PropertyDetails.jsx'
 import AdminLoginPage from './pages/AdminLogin.jsx'
 import UserSignUpPage from './pages/UserSignup.jsx'
 import UserLoginPage from './pages/UserLogin.jsx'
@@ -16,6 +18,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/create-property" element={<CreateProperty />} />
+      <Route path="/property/:id" element={<PropertyDetails />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/signup" element={<UserSignUpPage />} />
       <Route path="/login" element={<UserLoginPage />} />
