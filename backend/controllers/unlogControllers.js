@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User } = require('../models/userSchemas');
+const Property = require('../models/propertySchemas');
 const mongoose = require('mongoose');
 const validator = require("validator");
 
@@ -178,4 +179,24 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logout successful" });
 };
 
-module.exports = { login, signup, adminLogin, authMe, logout };
+// Fetch all Properties
+const getProperties = async(req, res) => {
+    try {
+        const properties = await Property.find();
+        res.status(200).json({ success: true, data: properties });
+    } catch (error) {
+        res.status(500).json({ success: false, error: "Could not fetch properties in server" });
+    }
+}
+
+// Fetch a single Property
+const getProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    res.status(200).json({ success: true, data: property });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Could not fetch the property in server" })
+  }
+}
+
+module.exports = { login, signup, adminLogin, authMe, logout, getProperties, getProperty };

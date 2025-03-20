@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, Building } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
 const Home = () => {
   const [searchParams, setSearchParams] = useState({
     location: '',
@@ -20,6 +23,27 @@ const Home = () => {
     // Placeholder for search functionality
     console.log('Searching with params:', searchParams);
   };
+
+  const [properties, setProperties] = useState([]);
+
+  useEffect(() => {
+    const getProperties = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/api/auth/getProperties", { withCredentials: true });
+        if (response.data.success) {
+          console.log("Fetched Properties:", response.data.data);
+          setProperties(response.data.data);
+        } else {
+          console.log("Failed to fetch properties:", response.data.error)
+        }
+      } catch (error) {
+          console.log("Error fetchng properties:", error);
+      }
+    }
+
+    getProperties();
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -92,16 +116,16 @@ const Home = () => {
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Featured Rooms</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { id: "business-suite", name: "Business Suite", price: "$120/night", icon: <Building size={40} /> },
-            { id: "luxury-room", name: "Luxury Room", price: "$250/night", icon: <Building size={40} /> },
-            { id: "standard-room", name: "Standard Room", price: "$80/night", icon: <Building size={40} /> }
-          ].map((room) => (
-            <div key={room.id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition">
-              <div className="flex justify-center mb-4 text-blue-600">{room.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{room.name}</h3>
-              <p className="text-gray-600">{room.price}</p>
-            </div>
+          {properties.map((property) => (
+            <Link to={`/property/${property._id}`}>
+              <div key={property._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition">
+                <div className="flex justify-center">
+                  <Building className="text-blue-600 m-3" size={60} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{property.name}</h3>
+                <p className="text-gray-600">{property.price}</p>
+              </div>
+            </Link>
           ))}
         </div>
       </section>

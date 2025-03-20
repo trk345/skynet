@@ -8,6 +8,8 @@ const {
     authMe,
     logout,
     // resetPassword,
+    getProperties,
+    getProperty,
 } = require('../controllers/unlogControllers');
 const router = express.Router();
 
@@ -61,6 +63,10 @@ router.post('/logout', logout);
 router.post('/login', loginLimiter, login);
 router.post('/admin/login', loginLimiter, adminLogin);
 router.post('/signup', signupLimiter, signup);
+// Get all properties
+router.get("/getProperties", getProperties)
+// Get a single property
+router.get("/getProperty/:id", getProperty)
 
 
 module.exports = router;

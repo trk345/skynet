@@ -99,7 +99,12 @@ const Navbar = () => {
           </div>
           <nav className="space-x-4">
             <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
-            <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">Bookings</Link>
+
+            {user?.role === "vendor" ? (
+            <Link to="/create-property" className="text-gray-700 hover:text-blue-600 cursor-pointer">CreateProperty</Link>) :
+            (<Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">Bookings</Link>) 
+            }
+
             <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">About</Link>
 
             {!isLoggedIn ? (
