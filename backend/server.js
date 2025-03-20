@@ -19,6 +19,7 @@ const rateLimit = require("express-rate-limit");
 const unlogRoutes = require('./routes/unlogRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
+const vendorRoutes = require('./routes/vendorRoutes');
 const { User } = require('./models/userSchemas');
 
 // Express app
@@ -28,6 +29,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser()); // Parse cookies
 app.use(morgan('dev'));
+app.use('/uploads', express.static('uploads')); // Serve static files
 
 // CORS Middleware (Allow frontend at port 5173)
 app.use(cors({
@@ -183,6 +185,7 @@ app.use(globalLimiter);
 app.use('/api/auth', unlogRoutes);
 app.use('/api/admin', authenticateJWT, adminRoutes); // Protected
 app.use('/api/user', authenticateJWT, userRoutes);  // Protected
+app.use('/api/vendor', authenticateJWT, vendorRoutes); // Protected
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));

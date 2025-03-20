@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+    // getProperties,
     getNotifs,
     putReadNotifs,
     getUnreadNotifCount,
@@ -14,6 +15,9 @@ const limiter = rateLimit({
     max: 100, // Limit each IP to 100 requests per windowMs
     message: 'Too many requests from this IP, please try again later.'
   });
+
+// // Get all properties
+// router.get("/getProperties", limiter, getProperties)
 
 // Post Vendor Request
 router.post("/postVendorRequest", limiter, postVendorRequest);

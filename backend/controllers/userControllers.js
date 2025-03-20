@@ -2,6 +2,7 @@ const { User } = require('../models/userSchemas');
 const { VendorRequest } = require('../models/vendorRequestSchemas');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const Property = require("../models/propertySchemas");
 
 // Middleware to verify JWT and extract userId
 const verifyUser = (req, res) => {
@@ -106,10 +107,21 @@ const putReadNotifs = async (req, res) => {
     }
 };
 
+    // // Fetch all Properties
+    // const getProperties = async(req, res) => {
+    //     try {
+    //         const properties = await Property.find();
+    //         res.json({ success: true, data: properties });
+    //     } catch (error) {
+    //         res.status(500).json({ success: false, error: "Could not fetch properties in Backend" });
+    //     }
+    // }
+
 
 module.exports = {
     putReadNotifs,
     getNotifs,
     getUnreadNotifCount, 
     postVendorRequest,
+    // getProperties,
 };
