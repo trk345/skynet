@@ -1,9 +1,171 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from 'axios';
-import { MapPin, Calendar, Users, Wifi, Car, Coffee, Wind, Thermometer, Tv, ChefHat, Briefcase, Star, Phone, Mail } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Maximize2, MapPin, Calendar, Users, Wifi, Car, Coffee, Wind, Thermometer, Tv, ChefHat, Briefcase, Star, Phone, Mail } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+
+
+function PropertyImageGallery({ images }) {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleNext = () => {
+        setCurrentImageIndex((prev) => 
+            prev === images.length - 1 ? images.length - 1 : prev + 1
+        );
+    };
+
+    const handlePrev = () => {
+        setCurrentImageIndex((prev) => 
+            prev === 0 ? 0 : prev - 1
+        );
+    };
+
+    if (!images || images.length === 0) {
+        return (
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-64 flex items-center justify-center rounded-lg">
+                <p className="text-gray-500 text-xl">No images available</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative group">
+            {/* Main Image Container */}
+            <div className="relative w-full h-[500px] overflow-hidden rounded-lg">
+                {/* Main Image */}
+                <img 
+                    src={`http://localhost:4000/${images[currentImageIndex]}`} 
+                    alt={`Property image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300"
+                />
+
+                {/* Navigation Arrows */}
+                {images.length > 1 && (
+                    <>  
+                    {currentImageIndex > 0 && (
+                        <button 
+                            onClick={handlePrev}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
+                        >
+                            <ChevronLeft className="text-gray-800" />
+                        </button>
+                    )}
+                    
+                    {currentImageIndex < (images.length -1) && (
+                        <button 
+                            onClick={handleNext}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
+                        >
+                            <ChevronRight className="text-gray-800" />
+                        </button>
+                    )}
+                    </>
+                )}
+
+                {/* Expand Button */}
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="absolute top-4 right-4 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300"
+                >
+                    <Maximize2 className="text-gray-800" />
+                </button>
+
+                {/* Image Count */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-1 rounded-full">
+                    {currentImageIndex + 1} / {images.length}
+                </div>
+            </div>
+
+            {/* Thumbnail Gallery */}
+            {images.length > 1 && (
+                <div className="mt-4 flex space-x-2 overflow-x-auto pb-2">
+                    {images.map((image, index) => (
+                        <button 
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
+                                index === currentImageIndex 
+                                    ? 'border-blue-500' 
+                                    : 'border-transparent hover:border-gray-300'
+                            }`}
+                        >
+                            <img 
+                                src={`http://localhost:4000/${image}`} 
+                                alt={`Thumbnail ${index + 1}`}
+                                className="w-full h-full object-cover"
+                            />
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Full Screen Modal */}
+            {isModalOpen && (
+            <div 
+                className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
+                onClick={() => setIsModalOpen(false)}
+            >
+                <div 
+                    className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Previous Image Button */}
+                    {images.length > 1 && currentImageIndex>0 && (
+                        
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handlePrev();
+                            }}
+                            className="absolute left-0 z-10 bg-white/20 cursor-pointer hover:bg-white/40 p-4 rounded-full transition-all duration-300 text-white"
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                    )}
+
+                    {/* Image Container */}
+                    <div className="relative w-full h-full flex items-center justify-center p-8">
+                        <img 
+                            src={`http://localhost:4000/${images[currentImageIndex]}`} 
+                            alt={`Full screen image ${currentImageIndex + 1}`}
+                            className="max-w-full max-h-full object-contain"
+                        />
+                    </div>
+
+                    {/* Next Image Button */}
+                    {images.length > 1 && currentImageIndex < images.length -1 && (
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleNext();
+                            }}
+                            className="absolute right-0 z-10 bg-white/20 cursor-pointer hover:bg-white/40 p-4 rounded-full transition-all duration-300 text-white"
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    )}
+
+                    {/* Close Button */}
+                    <button 
+                        onClick={() => setIsModalOpen(false)}
+                        className="absolute top-0 right-0 m-4 text-white bg-white/20 cursor-pointer hover:bg-white/40 p-2 rounded-full transition-all duration-300"
+                    >
+                        <X size={24} />
+                    </button>
+
+                    {/* Image Counter */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4 text-white bg-black/50 px-4 py-2 rounded-lg">
+                        {currentImageIndex + 1} / {images.length}
+                    </div>
+                </div>
+            </div>
+            )}
+
+        </div>
+    );
+}
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -126,23 +288,9 @@ const PropertyDetails = () => {
                     
                     {/* Property Images */}
                     <div className="p-6 border-t border-gray-200">
-                        {property.images && property.images.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {property.images.map((image, index) => (
-                                    <img 
-                                        key={index} 
-                                        src={`http://localhost:4000/${image}`} 
-                                        alt={`Property ${index+1}`} 
-                                        className="w-full h-64 object-cover rounded"
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-gray-200 h-64 flex items-center justify-center rounded">
-                                <p className="text-gray-500">No images available</p>
-                            </div>
-                        )}
+                        <PropertyImageGallery images={property.images} />
                     </div>
+                    
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -367,6 +515,7 @@ const PropertyDetails = () => {
                                     )}
                                     
                                     <button
+                                        type="button"
                                         onClick={handleBooking}
                                         disabled={!bookingDates.checkIn || !bookingDates.checkOut || property.status !== 'available'}
                                         className={`w-full py-3 rounded-md text-white font-semibold ${
