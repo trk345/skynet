@@ -15,7 +15,7 @@ const PropertySchema = new mongoose.Schema({
   price: { type: Number, required: true },
   bedrooms: { type: Number, required: true },
   bathrooms: { type: Number, required: true },
-  squareFeet: { type: String },
+  squareFeet: { type: Number },
   maxGuests: { type: Number, required: true },
   amenities: {
     wifi: { type: Boolean, default: false },
