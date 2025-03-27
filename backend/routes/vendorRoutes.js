@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../configs/multerConfig'); // Import the multer configuration file
 const {
-    createProperty
+    createProperty,
+    getProperties,
+    getProperty,
+    updateProperty,
+    deleteProperty,
 } = require('../controllers/vendorControllers');
 const rateLimit = require("express-rate-limit");
 
@@ -14,7 +18,21 @@ const limiter = rateLimit({
   });
 
 // Route for creating a property with images
-router.post('/create-property', upload.array('images'), createProperty);
+// Handles multiple image uploads and passes them to createProperty controller
+// Field name 'images' must match the form field name in the frontend
+router.post('/create-property', limiter, upload.array('images'), createProperty);
+
+// Fetch all vendor properties
+router.get("/getProperties", limiter, getProperties);
+
+// Fetch a single property
+router.get("/getProperty/:id", limiter, getProperty);
+
+// Update a property
+router.put('/update-property/:id', limiter, upload.array('newImages'), updateProperty);
+
+// Delete a property
+router.delete('/deleteProperty/:id', limiter, deleteProperty);
 
 
 

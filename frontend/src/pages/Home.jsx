@@ -117,8 +117,8 @@ const Home = () => {
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Featured Rooms</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {properties.map((property) => (
-            <Link to={`/property/${property._id}`}>
-              <div key={property._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition">
+            <Link key={property._id} to={`/property/${property._id}`}>
+              <div className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition">
                 <div className="flex justify-center">
                   <Building className="text-blue-600 m-3" size={60} />
                 </div>

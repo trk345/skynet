@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Mail, Phone, X, House, UserRound, Save, Upload, Bed, Bath, Square, DollarSign, MapPin } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from "axios";
 
-const CreateProperty = () => {
+const EditProperty = () => {
   const navigate = useNavigate();
-
+  const { id } = useParams();
+  console.log("ID:", id)
   const [property, setProperty] = useState({
     name: '',
     type: 'standard-room',
@@ -37,6 +38,35 @@ const CreateProperty = () => {
     email: '',
     images: []
   });
+
+  const [preview, setPreview] = useState([]);
+
+  useEffect(() => {
+    const getProperty = async () => {
+      try {
+        const response = await axios.get(`http://localhost:4000/api/vendor/getProperty/${id}`, { withCredentials: true});
+        if (response.data.success) {
+          setProperty(response.data.data)
+
+          // Convert stored images into preview format
+          const storedImages = Array.isArray(response.data.data.images) // Check if property had images
+          ? response.data.data.images.map((image) => ({
+              preview: `http://localhost:4000/${image}`,
+              file: image, // No file data for already stored images
+              stored: true, // Mark as existing image from DB
+              })) 
+          : [];
+          setPreview(storedImages);
+
+        } else {
+          console.error("Error fetching property:", response.data.error)
+        }
+      } catch (error) {
+        console.error("Error fetching property:", error);
+      }
+    }
+    getProperty();
+  }, [id])
 
   // State for tracking validation errors
   const [errors, setErrors] = useState({});
@@ -183,8 +213,6 @@ const CreateProperty = () => {
     return newErrors;
   };
 
-  const [preview, setPreview] = useState([]);
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     // Validate file size (Max 5MB)
@@ -205,6 +233,7 @@ const CreateProperty = () => {
     const newImages = validFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file),
+      stored: false // Mark as new upload
     }));
 
     // Append valid files to state
@@ -212,12 +241,39 @@ const CreateProperty = () => {
     setPreview(prev => [...prev, ...newImages]);
 
   }
+
   
   const removeImage = (index, e) => {
-    e.preventDefault(); // Prevent form submission
-    setProperty(prevProperty => ({...prevProperty, images: prevProperty.images.filter((_, i) => i !== index)}));
-    setPreview(prev => prev.filter((_, i) => i !== index));
-  }
+    e.preventDefault(); // Prevent default form submission behavior
+  
+    setPreview((prev) => {
+      const updatedPreview = [...prev];
+      const removedImage = updatedPreview[index]; // Get the removed image
+  
+      // // Extract the filename from the full URL (handles both '/' and '\')
+      // const filename = removedImage.preview.split(/[/\\]/).pop();
+  
+      // Check if it's a stored image
+      if (removedImage.stored) {
+        setProperty((prevProperty) => ({
+          ...prevProperty,
+          images: prevProperty.images.filter((_, i) => i !== index),
+          removedImages: [...(prevProperty.removedImages || []), removedImage.file], // Store removed DB images to later remove from server
+        }))
+        console.log("Removed Images: ", property.removedImages);
+      } else {
+        setProperty((prevProperty) => ({
+          ...prevProperty,
+          images: prevProperty.images.filter((_, i) => i !== index),
+        }));
+      }
+  
+      // Remove from the preview list
+      updatedPreview.splice(index, 1);
+      return updatedPreview;
+    });
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -238,7 +294,7 @@ const CreateProperty = () => {
     }
     
     // Form is valid, proceed with submission
-    console.log('Submitting property:', property);
+    console.log('Submitting Changes:', property);
     const formData = new FormData();
 
     // Append the form fields to formData
@@ -258,25 +314,33 @@ const CreateProperty = () => {
     formData.append("email", property.email);
 
     // Append images to formData
-    property.images.forEach((image) => {
-      formData.append("images", image); // Each image is appended with the key "images"
+    preview.forEach((image) => {
+      if (!image.stored) { // Only append images that aren't already in the DB 
+        formData.append("newImages", image.file); // Each image is appended with the key "newImages"
+      }
+    });
+
+    // Append removed images to formData
+    property.removedImages?.forEach((image) => {
+      formData.append("removedImages", image); // Each image is appended with the key "removedImages"
     });
   
     // Make the API request to upload
     try {
-      const response = await axios.post("http://localhost:4000/api/vendor/create-property", formData, {
+      const response = await axios.put(`http://localhost:4000/api/vendor/update-property/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
       });
   
-      if (response.status === 201) {
-        navigate('/');
-        alert("Property created successfully");
+      if (response.status === 200) {
+        navigate(`/property/${id}`);
+        alert("Property updated successfully");
       }
     } catch (err) {
-      console.error("Error submitting property:", err);
+        alert("Something went wrong, changes were not submitted");
+        console.error("Error submitting property:", err);
     }
     
   };
@@ -665,36 +729,35 @@ const CreateProperty = () => {
                 </label>
               </div>
             </div>
-
-            {/* Preview of Selected Images */}
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {preview.map((image, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={image.preview}
-                    alt={`preview-${index}`}
-                    className="mb-2 w-full h-32 sm:h-40 md:h-48 object-cover bg-gray-100 rounded-md border"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => removeImage(index, e)}
-                    className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
+          
+          {/* Preview of Selected Images */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {preview.map((image, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={image.preview}
+                  alt={`preview-${index}`}
+                  className="mb-2 w-full h-32 sm:h-40 md:h-48 object-cover bg-gray-100 rounded-md border"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => removeImage(index, e)}
+                  className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ))}
+          </div>
                 
             {/* Submit Button */}
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 cursor-pointer flex items-center"
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 flex items-center cursor-pointer"
               >
                 <Save className="mr-2" size={20} />
-                Create Property
+                Save Changes
               </button>
             </div>
           </form>
@@ -706,4 +769,4 @@ const CreateProperty = () => {
   );
 };
 
-export default CreateProperty;
+export default EditProperty;

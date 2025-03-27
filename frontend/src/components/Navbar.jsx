@@ -101,11 +101,14 @@ const Navbar = () => {
             <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
 
             {user?.role === "vendor" ? (
-            <Link to="/create-property" className="text-gray-700 hover:text-blue-600 cursor-pointer">CreateProperty</Link>) :
+            <>
+              <Link to="/vendor-dashboard" className="text-gray-700 hover:text-blue-600 cursor-pointer">Dashboard</Link>
+              <Link to="/create-property" className="text-gray-700 hover:text-blue-600 cursor-pointer">Create Property</Link>
+            </>) :
             (<Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">Bookings</Link>) 
             }
 
-            <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">About</Link>
+            {/* <Link to="#" className="text-gray-700 cursor-not-allowed" aria-disabled="true">About</Link> */}
 
             {!isLoggedIn ? (
               <Link to="/login" className="text-gray-700 hover:text-blue-600">Login</Link>
