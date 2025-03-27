@@ -56,9 +56,11 @@ const VendorDashboard = () => {
           });
         } else {
           console.log("Failed to fetch properties:", response.data.error);
+          alert("Failed to fetch properties. Please try again later");
         }
       } catch (error) {
         console.log("Error fetching properties:", error);
+        alert("There was an error when trying to fetch properties. Please try again later");
       } finally {
         setIsLoading(false);
       }
@@ -187,6 +189,7 @@ const VendorDashboard = () => {
             
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setFilterOpen(!filterOpen)}
                 className="flex items-center justify-center bg-gray-100 py-2 px-4 rounded-md hover:bg-gray-200 transition duration-300"
               >
@@ -198,42 +201,49 @@ const VendorDashboard = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                   <div className="py-1">
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('newest'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Newest First
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('name-asc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Name (A-Z)
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('name-desc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Name (Z-A)
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('price-asc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Price (Low to High)
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('price-desc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Price (High to Low)
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('rating-desc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Highest Rated
                     </button>
                     <button 
+                      type="button"
                       onClick={() => {setSortOption('reviews-desc'); setFilterOpen(false);}}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
@@ -333,6 +343,7 @@ const VendorDashboard = () => {
                       <Edit size={16} className="inline mr-1" /> Edit
                     </Link>
                     <button 
+                      type="button"
                       onClick={() => handleDeleteProperty(property._id)}
                       className="bg-red-50 text-red-600 py-2 px-4 rounded hover:bg-red-100 transition duration-300 cursor-pointer"
                     >
