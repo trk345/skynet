@@ -125,6 +125,7 @@ const Home = () => {
   }, [])
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <Navbar></Navbar>
@@ -323,9 +324,10 @@ const Home = () => {
           )} */}
         </section>    
 
+    </div>
       {/* Footer */}
       <Footer></Footer>
-    </div>
+    </>
   );
 };
 export default Home;

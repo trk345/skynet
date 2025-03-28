@@ -298,20 +298,20 @@ const EditProperty = () => {
     const formData = new FormData();
 
     // Append the form fields to formData
-    formData.append("name", property.name);
-    formData.append("type", property.type);
-    formData.append("description", property.description);
-    formData.append("location", property.location);
-    formData.append("address", property.address);
-    formData.append("price", property.price);
-    formData.append("bedrooms", property.bedrooms);
-    formData.append("bathrooms", property.bathrooms);
-    formData.append("squareFeet", property.squareFeet);
-    formData.append("maxGuests", property.maxGuests);
-    formData.append("amenities", JSON.stringify(property.amenities)); // If you need to store it as a string
-    formData.append("availability", JSON.stringify(property.availability)); // Same for availability
-    formData.append("mobile", property.mobile);
-    formData.append("email", property.email);
+    formData.append("updatedName", property.name);
+    formData.append("updatedType", property.type);
+    formData.append("updatedDescription", property.description);
+    formData.append("updatedLocation", property.location);
+    formData.append("updatedAddress", property.address);
+    formData.append("updatedPrice", property.price);
+    formData.append("updatedBedrooms", property.bedrooms);
+    formData.append("updatedBathrooms", property.bathrooms);
+    formData.append("updatedSquareFeet", property.squareFeet);
+    formData.append("updatedMaxGuests", property.maxGuests);
+    formData.append("updatedAmenities", JSON.stringify(property.amenities)); // If you need to store it as a string
+    formData.append("updatedAvailability", JSON.stringify(property.availability)); // Same for availability
+    formData.append("updatedMobile", property.mobile);
+    formData.append("updatedEmail", property.email);
 
     // Append images to formData
     preview.forEach((image) => {
@@ -356,7 +356,7 @@ const EditProperty = () => {
       
       <div className="container mx-auto px-4 py-8">        
         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">Create New Property</h1>
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">Edit Property</h1>
           <form onSubmit={handleSubmit} noValidate>
             {/* Basic Information */}
             <div className="mb-8">

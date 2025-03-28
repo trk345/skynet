@@ -106,10 +106,24 @@ function PropertyImageGallery({ images }) {
             <div 
                 className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
                 onClick={() => setIsModalOpen(false)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                        setIsModalOpen(false);
+                    }
+                }}
+                tabIndex={0} // Allows div to capture key events
             >
                 <div 
                     className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                        if (e.key === "ArrowLeft" && images.length > 1 && currentImageIndex > 0) {
+                            handlePrev();
+                        } else if (e.key === "ArrowRight" && images.length > 1 && currentImageIndex < images.length - 1) {
+                            handleNext();
+                        }
+                    }}
+                    tabIndex={0} // Allows this div to capture key events
                 >
                     {/* Previous Image Button */}
                     {images.length > 1 && currentImageIndex>0 && (

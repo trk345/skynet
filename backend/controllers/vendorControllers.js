@@ -5,9 +5,8 @@ const fs = require("fs");
 
 const createProperty = async (req, res) => {
   try {
-    // console.log(req.body); // Body has the property fields (except images)
-    // console.log(req.files); // Files contain the uploaded images
-    // console.log(req.user)
+    // req.body has the property fields (except images)
+    // req.files contain the uploaded images
     const imagePaths = req.files.map(file => file.path); // Get uploaded images' paths
 
     // Parse amenities and availability from JSON string to object
@@ -108,27 +107,31 @@ const updateProperty = async (req, res) => {
     }
     
     // Parse amenities and availability from JSON string to object
-    const amenities = JSON.parse(req.body.amenities);
-    const availability = JSON.parse(req.body.availability);
-
+    let amenities, availability;
+    try {
+      amenities = JSON.parse(req.body.updatedAmenities);
+      availability = JSON.parse(req.body.updatedAvailability);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
+    }
     // Update property
-    const updatedProperty = await Property.findByIdAndUpdate(
+    await Property.findByIdAndUpdate(
       propertyID,
       {
-        name: req.body.name,
-        type: req.body.type,
-        description: req.body.description,
-        location: req.body.location,
-        address: req.body.address,
-        price: req.body.price,
-        bedrooms: req.body.bedrooms,
-        bathrooms: req.body.bathrooms,
-        squareFeet: req.body.squareFeet,
-        maxGuests: req.body.maxGuests,
+        name: req.body.updatedName,
+        type: req.body.updatedType,
+        description: req.body.updatedDescription,
+        location: req.body.updatedLocation,
+        address: req.body.updatedAddress,
+        price: req.body.updatedPrice,
+        bedrooms: req.body.updatedBedrooms,
+        bathrooms: req.body.updatedBathrooms,
+        squareFeet: req.body.updatedSquareFeet,
+        maxGuests: req.body.updatedMaxGuests,
         amenities: amenities,
         availability: availability,
-        mobile: req.body.mobile,
-        email: req.body.email,
+        mobile: req.body.updatedMobile,
+        email: req.body.updatedEmail,
         images: updatedImagePaths, // Save updated image paths in MongoDB
     }, 
     {new: true},
@@ -155,7 +158,7 @@ const deleteProperty = async (req, res) => {
       const fullPath = path.join(__dirname, '..', imagePath); // Ensure correct path
       if (fs.existsSync(fullPath)) {
         fs.unlink(fullPath, err => {
-          if (err) console.error(`Error deleting ${fullPath}:`, err);
+          if (err) console.error("Error deleting %s:", fullPath, err);
         });
       }
     });
