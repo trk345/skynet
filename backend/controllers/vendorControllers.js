@@ -81,7 +81,39 @@ const updateProperty = async (req, res) => {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    const newImagePaths = req.files.map(file => file.path); // Get uploaded images' paths
+    // Sanitize input
+    const updatedData = {};
+    if (req.body.updatedName) updatedData.name = req.body.updatedName.trim();
+    if (req.body.updatedType) updatedData.type = req.body.updatedType.trim();
+    if (req.body.updatedDescription) updatedData.description = req.body.updatedDescription.trim();
+    if (req.body.updatedLocation) updatedData.location = req.body.updatedLocation.trim();
+    if (req.body.updatedAddress) updatedData.address = req.body.updatedAddress.trim();
+    if (req.body.updatedPrice && !isNaN(req.body.updatedPrice)) updatedData.price = Number(req.body.updatedPrice);
+    if (req.body.updatedBedrooms && !isNaN(req.body.updatedBedrooms)) updatedData.bedrooms = Number(req.body.updatedBedrooms);
+    if (req.body.updatedBathrooms && !isNaN(req.body.updatedBathrooms)) updatedData.bathrooms = Number(req.body.updatedBathrooms);
+    if (req.body.updatedSquareFeet !== undefined) {
+      updatedData.squareFeet = req.body.updatedSquareFeet.trim(); // Keep it as a string
+    }
+    if (req.body.updatedMaxGuests && !isNaN(req.body.updatedMaxGuests)) updatedData.maxGuests = Number(req.body.updatedMaxGuests);
+
+    // Validate and parse JSON fields
+    try {
+      if (req.body.updatedAmenities) updatedData.amenities = JSON.parse(req.body.updatedAmenities);
+      if (req.body.updatedAvailability) updatedData.availability = JSON.parse(req.body.updatedAvailability);
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
+    }
+
+    // Validate email and mobile formats
+    if (req.body.updatedEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(req.body.updatedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+    if (req.body.updatedMobile && !/^\+?[0-9]{10,15}$/.test(req.body.updatedMobile)) {
+      return res.status(400).json({ message: "Invalid mobile number format" });
+    }
+
+    updatedData.mobile = req.body.updatedMobile || existingProperty.mobile;
+    updatedData.email = req.body.updatedEmail || existingProperty.email;
     
     // Handle removed images
     let updatedImagePaths = existingProperty.images;
@@ -101,41 +133,15 @@ const updateProperty = async (req, res) => {
       });
     }
 
-    // Append new image paths (if any) to existing ones 
+    // Append new image paths (if any) to existing ones
+    const newImagePaths = req.files.map(file => file.path); // Get uploaded images' paths 
     if (newImagePaths) {
       updatedImagePaths = [...updatedImagePaths, ...newImagePaths];
     }
-    
-    // Parse amenities and availability from JSON string to object
-    let amenities, availability;
-    try {
-      amenities = JSON.parse(req.body.updatedAmenities);
-      availability = JSON.parse(req.body.updatedAvailability);
-    } catch (error) {
-      res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
-    }
+    updatedData.images = updatedImagePaths;
+
     // Update property
-    await Property.findByIdAndUpdate(
-      propertyID,
-      {
-      name: req.body.updatedName || existingProperty.name,
-      type: req.body.updatedType || existingProperty.type,
-      description: req.body.updatedDescription || existingProperty.description,
-      location: req.body.updatedLocation || existingProperty.location,
-      address: req.body.updatedAddress || existingProperty.address,
-      price: req.body.updatedPrice || existingProperty.price,
-      bedrooms: req.body.updatedBedrooms || existingProperty.bedrooms,
-      bathrooms: req.body.updatedBathrooms || existingProperty.bathrooms,
-      squareFeet: req.body.updatedSquareFeet || existingProperty.squareFeet,
-      maxGuests: req.body.updatedMaxGuests || existingProperty.maxGuests,
-      amenities: amenities || existingProperty.amenities,
-      availability: availability || existingProperty.availability,
-      mobile: req.body.updatedMobile || existingProperty.mobile,
-      email: req.body.updatedEmail || existingProperty.email,
-      images: updatedImagePaths || existingProperty.images, // Save updated image paths in MongoDB
-      }, 
-      { new: true }
-    );
+    await Property.findByIdAndUpdate(propertyID, updatedData,  { new: true });
 
     res.status(200).json({ message: "Property Updated" /*, property: updatedProperty*/ });
   } catch (error) {

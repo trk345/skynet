@@ -624,7 +624,7 @@ const EditProperty = () => {
                     id="startDate"
                     type="date"
                     name="startDate"
-                    value={property.availability.startDate}
+                    value={property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : ''}
                     max={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
                     onChange={handleAvailabilityChange}
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -642,7 +642,7 @@ const EditProperty = () => {
                     id="endDate"
                     type="date"
                     name="endDate"
-                    value={property.availability.endDate}
+                    value={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
                     min={property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : ''}
                     onChange={handleAvailabilityChange}
                     className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
