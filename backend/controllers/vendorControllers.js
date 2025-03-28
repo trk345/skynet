@@ -98,8 +98,22 @@ const updateProperty = async (req, res) => {
 
     // Validate and parse JSON fields
     try {
-      if (req.body.updatedAmenities) updatedData.amenities = JSON.parse(req.body.updatedAmenities);
-      if (req.body.updatedAvailability) updatedData.availability = JSON.parse(req.body.updatedAvailability);
+      if (req.body.updatedAmenities) {
+        const parsedAmenities = JSON.parse(req.body.updatedAmenities);
+        if (typeof parsedAmenities === 'object' && parsedAmenities !== null && !Array.isArray(parsedAmenities)) {
+          updatedData.amenities = parsedAmenities;
+        } else {
+          return res.status(400).json({ message: "Invalid format for amenities" });
+        }
+      }
+      if (req.body.updatedAvailability) {
+        const parsedAvailability = JSON.parse(req.body.updatedAvailability);
+        if (typeof parsedAvailability === 'object' && parsedAvailability !== null && !Array.isArray(parsedAvailability)) {
+          updatedData.availability = parsedAvailability;
+        } else {
+          return res.status(400).json({ message: "Invalid format for availability" });
+        }
+      }
     } catch (error) {
       return res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
     }
