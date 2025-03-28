@@ -78,7 +78,7 @@ const updateProperty = async (req, res) => {
     // Find existing property
     const existingProperty = await Property.findById(propertyID);
     if (!existingProperty) {
-      res.status(404).json({ message: "Property not found" });
+      return res.status(404).json({ message: "Property not found" });
     }
 
     const newImagePaths = req.files.map(file => file.path); // Get uploaded images' paths
@@ -95,7 +95,7 @@ const updateProperty = async (req, res) => {
         console.log("fullpath:", fullPath);
         if (fs.existsSync(fullPath)) {
           fs.unlink(fullPath, err => {
-            if (err) console.error(`Error deleting ${fullPath}:`, err);
+            if (err) console.error("Error deleting %s:", fullPath, err);
           });
         }
       });
@@ -118,24 +118,24 @@ const updateProperty = async (req, res) => {
     await Property.findByIdAndUpdate(
       propertyID,
       {
-        name: req.body.updatedName,
-        type: req.body.updatedType,
-        description: req.body.updatedDescription,
-        location: req.body.updatedLocation,
-        address: req.body.updatedAddress,
-        price: req.body.updatedPrice,
-        bedrooms: req.body.updatedBedrooms,
-        bathrooms: req.body.updatedBathrooms,
-        squareFeet: req.body.updatedSquareFeet,
-        maxGuests: req.body.updatedMaxGuests,
-        amenities: amenities,
-        availability: availability,
-        mobile: req.body.updatedMobile,
-        email: req.body.updatedEmail,
-        images: updatedImagePaths, // Save updated image paths in MongoDB
-    }, 
-    {new: true},
-  );
+      name: req.body.updatedName || existingProperty.name,
+      type: req.body.updatedType || existingProperty.type,
+      description: req.body.updatedDescription || existingProperty.description,
+      location: req.body.updatedLocation || existingProperty.location,
+      address: req.body.updatedAddress || existingProperty.address,
+      price: req.body.updatedPrice || existingProperty.price,
+      bedrooms: req.body.updatedBedrooms || existingProperty.bedrooms,
+      bathrooms: req.body.updatedBathrooms || existingProperty.bathrooms,
+      squareFeet: req.body.updatedSquareFeet || existingProperty.squareFeet,
+      maxGuests: req.body.updatedMaxGuests || existingProperty.maxGuests,
+      amenities: amenities || existingProperty.amenities,
+      availability: availability || existingProperty.availability,
+      mobile: req.body.updatedMobile || existingProperty.mobile,
+      email: req.body.updatedEmail || existingProperty.email,
+      images: updatedImagePaths || existingProperty.images, // Save updated image paths in MongoDB
+      }, 
+      { new: true }
+    );
 
     res.status(200).json({ message: "Property Updated" /*, property: updatedProperty*/ });
   } catch (error) {
