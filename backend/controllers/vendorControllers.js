@@ -131,8 +131,12 @@ const updateProperty = async (req, res) => {
     
     // Handle removed images
     let updatedImagePaths = existingProperty.images;
-    if (req.body.removedImages) {
-      const removedImages = req.body.removedImages; 
+    let removedImages = req.body.removedImages;
+    if (removedImages) { 
+      if (!Array.isArray(removedImages)) { // If only one image was sent, it will be a string. Convert it to an array.
+        removedImages = [removedImages];
+      }
+      console.log(`Removed Images: ${removedImages}`)
       updatedImagePaths = updatedImagePaths.filter(image => !removedImages.includes(image)); // Remove images that should be deleted
 
       // Delete removed images from the server

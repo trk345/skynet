@@ -48,6 +48,7 @@ function PropertyImageGallery({ images = [] }) {
                     <>  
                     {currentImageIndex > 0 && (
                         <button 
+                            type="button"
                             onClick={handlePrev}
                             className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
                         >
@@ -57,6 +58,7 @@ function PropertyImageGallery({ images = [] }) {
                     
                     {currentImageIndex < (images.length -1) && (
                         <button 
+                            type="button"
                             onClick={handleNext}
                             className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
                         >

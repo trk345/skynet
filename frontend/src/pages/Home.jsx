@@ -277,7 +277,7 @@ const Home = () => {
                         <div className="flex items-center space-x-0.5 opacity-70">
                           {(() => {
                             const activeAmenities = Object.entries(property.amenities)
-                              .filter(([isAvailable]) => isAvailable)
+                              .filter(([_, isAvailable]) => isAvailable)
                               .slice(0, 2)
                               .map(([amenity]) => amenity);
 

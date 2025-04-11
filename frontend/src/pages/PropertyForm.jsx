@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Mail, Phone, X, House, UserRound, Save, Upload, Bed, Bath, Square, DollarSign, MapPin } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from "axios";
 
-const CreateProperty = () => {
+const PropertyForm = () => {
   const navigate = useNavigate();
-
+  const { id } = useParams(); 
+  const isEditMode = Boolean(id); // if id exists, we are in Edit mode
   const [property, setProperty] = useState({
     name: '',
     type: 'standard-room',
@@ -38,8 +39,41 @@ const CreateProperty = () => {
     images: []
   });
 
+  const [preview, setPreview] = useState([]);
+
   // State for tracking validation errors
   const [errors, setErrors] = useState({});
+
+  if (isEditMode) {
+    useEffect(() => {
+      const getProperty = async () => {
+        try {
+          const response = await axios.get(`http://localhost:4000/api/vendor/getProperty/${id}`, { withCredentials: true});
+          if (response.data.success) {
+            const fetchedProperty = response.data.data;
+            fetchedProperty.squareFeet = fetchedProperty.squareFeet == "null" ? "" : fetchedProperty.squareFeet;
+            setProperty(fetchedProperty)
+
+            // Convert stored images into preview format
+            const storedImages = Array.isArray(response.data.data.images) // Check if property had images
+            ? response.data.data.images.map((image) => ({
+                preview: `http://localhost:4000/${image}`,
+                file: image, // No file data for already stored images
+                stored: true, // Mark as existing image from DB
+                })) 
+            : [];
+            setPreview(storedImages);
+
+          } else {
+            console.error("Error fetching property:", response.data.error)
+          }
+        } catch (error) {
+          console.error("Error fetching property:", error);
+        }
+      }
+      getProperty();
+    }, [id])
+  }
 
   const propertyTypes = [
     { id: 'standard-room', name: 'Standard Room' },
@@ -183,8 +217,6 @@ const CreateProperty = () => {
     return newErrors;
   };
 
-  const [preview, setPreview] = useState([]);
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     // Validate file size (Max 5MB)
@@ -205,6 +237,7 @@ const CreateProperty = () => {
     const newImages = validFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file),
+      ...(isEditMode && { stored: false }) // Mark as new upload
     }));
 
     // Append valid files to state
@@ -215,8 +248,34 @@ const CreateProperty = () => {
   
   const removeImage = (index, e) => {
     e.preventDefault(); // Prevent form submission
-    setProperty(prevProperty => ({...prevProperty, images: prevProperty.images.filter((_, i) => i !== index)}));
-    setPreview(prev => prev.filter((_, i) => i !== index));
+    if (!isEditMode) {
+      setProperty(prevProperty => ({...prevProperty, images: prevProperty.images.filter((_, i) => i !== index)}));
+      setPreview(prev => prev.filter((_, i) => i !== index));
+    } else {
+        setPreview((prev) => {
+          const updatedPreview = [...prev];
+          const removedImage = updatedPreview[index]; // Get the removed image
+      
+          // Check if it's a stored image
+          if (removedImage.stored) {
+            setProperty((prevProperty) => ({
+              ...prevProperty,
+              images: prevProperty.images.filter((_, i) => i !== index),
+              removedImages: [...(prevProperty.removedImages || []), removedImage.file], // Store removed DB images to later remove from server
+            }))
+            console.log("Removed Images: ", property.removedImages);
+          } else {
+            setProperty((prevProperty) => ({
+              ...prevProperty,
+              images: prevProperty.images.filter((_, i) => i !== index),
+            }));
+          }
+      
+          // Remove from the preview list
+          updatedPreview.splice(index, 1);
+          return updatedPreview;
+        });
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -238,47 +297,95 @@ const CreateProperty = () => {
     }
     
     // Form is valid, proceed with submission
-    console.log('Submitting property:', property);
+    console.log('Submitting property form:', property);
     const formData = new FormData();
 
-    // Append the form fields to formData
-    formData.append("name", property.name);
-    formData.append("type", property.type);
-    formData.append("description", property.description);
-    formData.append("location", property.location);
-    formData.append("address", property.address);
-    formData.append("price", property.price);
-    formData.append("bedrooms", property.bedrooms);
-    formData.append("bathrooms", property.bathrooms);
-    formData.append("squareFeet", property.squareFeet);
-    formData.append("maxGuests", property.maxGuests);
-    formData.append("amenities", JSON.stringify(property.amenities)); // If you need to store it as a string
-    formData.append("availability", JSON.stringify(property.availability)); // Same for availability
-    formData.append("mobile", property.mobile);
-    formData.append("email", property.email);
+    if (!isEditMode) {
+      // Append the form fields to formData
+      formData.append("name", property.name);
+      formData.append("type", property.type);
+      formData.append("description", property.description);
+      formData.append("location", property.location);
+      formData.append("address", property.address);
+      formData.append("price", property.price);
+      formData.append("bedrooms", property.bedrooms);
+      formData.append("bathrooms", property.bathrooms);
+      formData.append("squareFeet", property.squareFeet);
+      formData.append("maxGuests", property.maxGuests);
+      formData.append("amenities", JSON.stringify(property.amenities)); // If you need to store it as a string
+      formData.append("availability", JSON.stringify(property.availability)); // Same for availability
+      formData.append("mobile", property.mobile);
+      formData.append("email", property.email);
 
-    // Append images to formData
-    property.images.forEach((image) => {
-      formData.append("images", image); // Each image is appended with the key "images"
-    });
-  
-    // Make the API request to upload
-    try {
-      const response = await axios.post("http://localhost:4000/api/vendor/create-property", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
+      // Append images to formData
+      property.images.forEach((image) => {
+        formData.append("images", image); // Each image is appended with the key "images"
       });
-  
-      if (response.status === 201) {
-        navigate('/');
-        alert("Property created successfully");
-      }
-    } catch (err) {
-      console.error("Error submitting property:", err);
-    }
+
+      // Make the API request to upload
+      try {
+        const response = await axios.post("http://localhost:4000/api/vendor/create-property", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        });
     
+        if (response.status === 201) {
+          navigate('/');
+          alert("Property created successfully");
+        }
+      } catch (err) {
+        alert("Error submitting property. Property could not be created.")
+        console.error("Error submitting property:", err);
+      }
+    } else {
+      formData.append("updatedName", property.name);
+      formData.append("updatedType", property.type);
+      formData.append("updatedDescription", property.description);
+      formData.append("updatedLocation", property.location);
+      formData.append("updatedAddress", property.address);
+      formData.append("updatedPrice", property.price);
+      formData.append("updatedBedrooms", property.bedrooms);
+      formData.append("updatedBathrooms", property.bathrooms);
+      formData.append("updatedSquareFeet", property.squareFeet);
+      formData.append("updatedMaxGuests", property.maxGuests);
+      formData.append("updatedAmenities", JSON.stringify(property.amenities)); // If you need to store it as a string
+      formData.append("updatedAvailability", JSON.stringify(property.availability)); // Same for availability
+      formData.append("updatedMobile", property.mobile);
+      formData.append("updatedEmail", property.email);
+
+      // Append images to formData
+      preview.forEach((image) => {
+        if (!image.stored) { // Only append images that aren't already in the DB 
+          formData.append("newImages", image.file); // Each image is appended with the key "newImages"
+        }
+      });
+
+      // Append removed images to formData
+      property.removedImages?.forEach((image) => {
+        formData.append("removedImages", image); // Each image is appended with the key "removedImages"
+      });
+
+      // Make the API request to upload
+      try {
+        const response = await axios.put(`http://localhost:4000/api/vendor/update-property/${id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        });
+    
+        if (response.status === 200) {
+          navigate(`/property/${id}`);
+          alert("Property updated successfully");
+        }
+      } catch (err) {
+          alert("Something went wrong, changes were not submitted");
+          console.error("Error submitting property:", err);
+      }
+    }
+
   };
 
   // Helper function to determine if a field has error
@@ -292,7 +399,9 @@ const CreateProperty = () => {
       
       <div className="container mx-auto px-4 py-8">        
         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-6 text-gray-800">Create New Property</h1>
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">
+            {isEditMode ? "Edit Property" : "Create New Property"}
+          </h1>
           <form onSubmit={handleSubmit} noValidate>
             {/* Basic Information */}
             <div className="mb-8">
@@ -330,7 +439,7 @@ const CreateProperty = () => {
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {propertyTypes.map(type => (
-                      <option key={type.id} value={type.id}>{type.name}</option>
+                      <option key={type.id} value={type.name}>{type.name}</option>
                     ))}
                   </select>
                 </div>
@@ -563,7 +672,8 @@ const CreateProperty = () => {
                     id="startDate"
                     type="date"
                     name="startDate"
-                    value={property.availability.startDate}
+                    value={property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : ''}
+                    min={new Date().toISOString().split('T')[0]} // Prevent past dates
                     max={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
                     onChange={handleAvailabilityChange}
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -581,8 +691,12 @@ const CreateProperty = () => {
                     id="endDate"
                     type="date"
                     name="endDate"
-                    value={property.availability.endDate}
-                    min={property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : ''}
+                    value={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
+                    min={
+                      property.availability?.startDate
+                      ? new Date(property.availability.startDate).toISOString().split('T')[0]
+                      : new Date().toISOString().split('T')[0]  // fallback to today if no start date
+                    } 
                     onChange={handleAvailabilityChange}
                     className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       hasError('endDate') ? 'border-red-500' : 'border-gray-300'
@@ -697,7 +811,7 @@ const CreateProperty = () => {
                 className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 cursor-pointer flex items-center"
               >
                 <Save className="mr-2" size={20} />
-                Create Property
+                {isEditMode ? "Save Changes" : "Create Property"}
               </button>
             </div>
           </form>
@@ -709,4 +823,4 @@ const CreateProperty = () => {
   );
 };
 
-export default CreateProperty;
+export default PropertyForm;
