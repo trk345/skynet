@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from 'axios';
-import { X, ChevronLeft, ChevronRight, Maximize2, MapPin, Calendar, Users, Wifi, Car, Coffee, Wind, Thermometer, Tv, ChefHat, Briefcase, Star, Phone, Mail } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Maximize2, MapPin, Users, Wifi, Car, Coffee, Wind, Thermometer, Tv, ChefHat, Briefcase, Star, Phone, Mail } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import PropTypes from 'prop-types';
 
-
-function PropertyImageGallery({ images }) {
+function PropertyImageGallery({ images = [] }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -186,11 +188,35 @@ const PropertyDetails = () => {
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const [bookingDates, setBookingDates] = useState({
-    checkIn: '',
-    checkOut: '',
+    checkIn: null,
+    checkOut: null,
     guests: 1
-  });
+  });  
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  // Fetch user data from backend on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/api/auth/me", {
+          withCredentials: true,
+        });
+        if (response.data) {
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        setUser(null);
+        console.error("Auth error:", error.response?.data || error.message);
+      }
+    };
+    
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const getProperty = async() => {
@@ -221,9 +247,113 @@ const PropertyDetails = () => {
         }));
     };
 
-    const handleBooking = () => {
-        console.log('Booking with details:', bookingDates);
-        // Add booking functionality here
+    const handleBooking = async () => {
+    
+        // Validate that all necessary fields are filled out
+        if (!bookingDates.checkIn || !bookingDates.checkOut || bookingDates.guests < 1) {
+            alert("Please fill out all the details correctly.");
+            return;
+        }
+    
+        const checkInDate = new Date(bookingDates.checkIn);
+        const checkOutDate = new Date(bookingDates.checkOut);
+    
+        // Check if check-in is before check-out and dates are valid
+        if (checkInDate >= checkOutDate) {
+            alert("Check-out date must be later than check-in date.");
+            return;
+        }
+    
+        // Calculate the number of nights
+        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    
+        if (nights <= 0) {
+            alert("Invalid date range. Please select valid dates.");
+            return;
+        }
+    
+        // Check if the number of guests is valid
+        if (bookingDates.guests <= 0) {
+            alert("Number of guests must be at least 1.");
+            return;
+        }
+    
+        // Prepare the booking details
+        const bookingDetails = {
+            propertyId: property._id,
+            checkIn: bookingDates.checkIn,
+            checkOut: bookingDates.checkOut,
+            guests: bookingDates.guests,
+            totalAmount: property.price * nights,
+        };
+    
+        try {
+            const response = await axios.post('http://localhost:4000/api/user/book-property', bookingDetails, { withCredentials: true });
+    
+            if (response.data.success) {
+                alert(`Booking successful! Total: $${response.data.totalAmount}`);
+                window.location.reload();  // Refresh the page
+            } else {
+                alert(`Booking failed: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Booking error:", error);
+            
+            // Try to extract the backend error message
+            const message =
+                error.response?.data?.message ||
+                "An error occurred while processing your booking. Please try again.";
+            
+            alert(message);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        if (!user) {
+          setSubmitError("You must be logged in to submit a review.");
+          return;
+        }
+      
+        if (rating === 0 || comment.trim() === "") {
+          setSubmitError("Please provide both a rating and a comment.");
+          return;
+        }
+      
+        try {
+          await axios.post(
+            `http://localhost:4000/api/user/properties/reviews/${id}`,
+            { rating, comment },
+            { withCredentials: true }
+          );
+      
+          window.location.reload(); // Refresh the page to reflect updated data
+        } catch (err) {
+          console.error("Error submitting review:", err);
+          setSubmitError("Failed to submit review. Please try again later.");
+        }
+      };
+
+    const renderInteractiveStars = () => {
+    return (
+        <div className="flex space-x-1 mb-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+            <svg
+            key={star}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHoverRating(star)}
+            onMouseLeave={() => setHoverRating(0)}
+            xmlns="http://www.w3.org/2000/svg"
+            className={`w-6 h-6 cursor-pointer ${
+                (hoverRating || rating) >= star ? "text-yellow-400" : "text-gray-300"
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+            </svg>
+        ))}
+        </div>
+    );
     };
 
     if (loading) return (
@@ -288,7 +418,13 @@ const PropertyDetails = () => {
                                     <div className="flex items-center">
                                         {renderStars(property.averageRating)}
                                         <span className="ml-2 text-gray-600">
-                                            {property.averageRating.toFixed(1)} ({property.reviewCount} reviews)
+                                        {property.averageRating !== undefined && property.reviewCount !== undefined ? (
+                                            <span className="ml-2 text-gray-600">
+                                                {property.averageRating.toFixed(1)} ({property.reviewCount} reviews)
+                                            </span>
+                                            ) : (
+                                            <span className="ml-2 text-gray-600">No reviews yet</span>
+                                        )}
                                         </span>
                                     </div>
                                 </div>
@@ -420,34 +556,63 @@ const PropertyDetails = () => {
                         
                         {/* Reviews */}
                         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                                Reviews ({property.reviewCount})
-                            </h2>
-                            
-                            {property.reviews && property.reviews.length > 0 ? (
-                                <div className="space-y-6">
-                                    {property.reviews.map((review, index) => (
-                                        <div key={index} className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h4 className="font-semibold">
-                                                        {review.user?.name || 'Anonymous'}
-                                                    </h4>
-                                                    <div className="flex mt-1">
-                                                        {renderStars(review.rating)}
-                                                    </div>
-                                                </div>
-                                                <span className="text-sm text-gray-500">
-                                                    {formatDate(review.createdAt)}
-                                                </span>
-                                            </div>
-                                            <p className="text-gray-600 mt-2">{review.comment}</p>
-                                        </div>
-                                    ))}
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                            Reviews ({property.reviewCount})
+                        </h2>
+
+                        {/* Check if user has already reviewed */}
+                        {user && !property.reviews.some((review) => review.userId === user._id) ? (
+                            <div className="bg-gray-50 p-4 rounded-lg border mb-6">
+                            <h3 className="text-lg font-semibold mb-2 text-gray-700">Leave a Review</h3>
+                            {renderInteractiveStars()}
+                            <textarea
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                rows={3}
+                                placeholder="Write your comment here..."
+                                className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-2"
+                            ></textarea>
+                            {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
+                            <button
+                                onClick={handleSubmitReview}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                            >
+                                Submit Review
+                            </button>
+                            </div>
+                        ) : (
+                            user && (
+                            <div className="text-gray-600 mb-4">
+                                <p>You have already reviewed this property.</p>
+                            </div>
+                            )
+                        )}
+
+                        {/* Reviews by Others */}
+                        {property.reviews && property.reviews.length > 0 ? (
+                            <div className="space-y-6">
+                            {property.reviews.map((review, index) => (
+                                <div key={index} className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                    <h4 className="font-semibold">
+                                        {review.username || 'Anonymous'}
+                                    </h4>
+                                    <div className="flex mt-1">
+                                        {renderStars(review.rating)}
+                                    </div>
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                    {formatDate(review.createdAt)}
+                                    </span>
                                 </div>
-                            ) : (
-                                <p className="text-gray-600">No reviews yet.</p>
-                            )}
+                                <p className="text-gray-600 mt-2">{review.comment}</p>
+                                </div>
+                            ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-600">No reviews yet.</p>
+                        )}
                         </div>
                     </div>
                     
@@ -457,36 +622,46 @@ const PropertyDetails = () => {
                         <div className="bg-white shadow-md rounded-lg p-6 sticky top-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Now</h2>
                             <div className="space-y-4">
+                                {/* Check In */}
                                 <div>
-                                    <label className="block text-gray-700 mb-2">Check In</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-3 left-3 text-gray-400" size={18} />
-                                        <input
-                                            type="date"
-                                            name="checkIn"
-                                            value={bookingDates.checkIn}
-                                            onChange={handleInputChange}
-                                            min={property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : ''}
-                                            max={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
-                                            className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
+                                <label className="block text-gray-700 mb-2">Check In</label>
+                                <DatePicker
+                                    selected={bookingDates.checkIn}
+                                    onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
+                                    minDate={new Date()} // ✅ Today or future only
+                                    maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                                    excludeDateIntervals={
+                                        property.bookedDates?.map(({ checkIn, checkOut }) => ({
+                                        start: new Date(checkIn),
+                                        end: new Date(checkOut),
+                                        })) || []
+                                    }
+                                    placeholderText="Select check-in date"
+                                    className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
                                 </div>
-                                
+
+                                {/* Check Out */}
                                 <div>
-                                    <label className="block text-gray-700 mb-2">Check Out</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-3 left-3 text-gray-400" size={18} />
-                                        <input
-                                            type="date"
-                                            name="checkOut"
-                                            value={bookingDates.checkOut}
-                                            onChange={handleInputChange}
-                                            min={bookingDates.checkIn || (property.availability?.startDate ? new Date(property.availability.startDate).toISOString().split('T')[0] : '')}
-                                            max={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
-                                            className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
+                                <label className="block text-gray-700 mb-2">Check Out</label>
+                                <DatePicker
+                                    selected={bookingDates.checkOut}
+                                    onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
+                                    minDate={
+                                        bookingDates.checkIn
+                                        ? new Date(bookingDates.checkIn.getTime() + 24 * 60 * 60 * 1000)
+                                        : new Date()
+                                    }
+                                    maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                                    excludeDateIntervals={
+                                        property.bookedDates?.map(({ checkIn, checkOut }) => ({
+                                        start: new Date(checkIn),
+                                        end: new Date(checkOut),
+                                        })) || []
+                                    }
+                                    placeholderText="Select check-out date"
+                                    className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
                                 </div>
                                 
                                 <div>
@@ -531,15 +706,15 @@ const PropertyDetails = () => {
                                     <button
                                         type="button"
                                         onClick={handleBooking}
-                                        disabled={!bookingDates.checkIn || !bookingDates.checkOut || property.status !== 'available'}
+                                        disabled={!bookingDates.checkIn || !bookingDates.checkOut || property.status !== 'available' || user === null}
                                         className={`w-full py-3 rounded-md text-white font-semibold ${
-                                            property.status === 'available' && bookingDates.checkIn && bookingDates.checkOut
+                                            property.status === 'available' && bookingDates.checkIn && bookingDates.checkOut && user !== null
                                                 ? 'bg-blue-600 hover:bg-blue-700 transition duration-300'
                                                 : 'bg-gray-400 cursor-not-allowed'
                                         }`}
                                     >
                                         {/* {property.status === 'available' ? 'Book Now' : 'Currently Unavailable'} */}
-                                        Book Now
+                                        {user !== null ? 'Book Now' : 'Please log in to book'}
                                     </button>
                                     
                                     {/* {property.status !== 'available' && (
@@ -561,6 +736,10 @@ const PropertyDetails = () => {
             <Footer />
         </div>
     );
+};
+
+PropertyImageGallery.propTypes = {
+    images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
 };
 
 export default PropertyDetails;

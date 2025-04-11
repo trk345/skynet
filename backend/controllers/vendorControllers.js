@@ -1,5 +1,5 @@
 const { User } = require("../models/userSchemas");
-const Property = require("../models/propertySchemas");
+const { Property } = require("../models/propertySchemas");
 const path = require("path");
 const fs = require("fs");
 

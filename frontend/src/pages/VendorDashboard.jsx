@@ -265,7 +265,7 @@ const VendorDashboard = () => {
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <Building size={60} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2 text-gray-700">No Properties Found</h3>
-            <p className="text-gray-600 mb-6">You haven't added any properties yet or none match your search.</p>
+            <p className="text-gray-600 mb-6">You haven&apos;t added any properties yet or none match your search.</p>
             <Link 
               to="/create-property" 
               className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300"
@@ -323,7 +323,7 @@ const VendorDashboard = () => {
                   {/* Latest Review Preview (if available) */}
                   {property.reviews && property.reviews.length > 0 && (
                     <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
-                      <p className="text-gray-700 italic">"{property.reviews[0].comment?.substring(0, 60)}..."</p>
+                      <p className="text-gray-700 italic">&quot;{property.reviews[0].comment?.substring(0, 60)}...&quot;</p>
                       <p className="text-gray-500 text-xs mt-1">— {property.reviews[0].user || 'Anonymous'}</p>
                     </div>
                   )}

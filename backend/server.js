@@ -69,7 +69,7 @@ const limiter = rateLimit({
 // JWT Token generation
 function createJWT(user) {
   const payload = {
-    userId: user.id,
+    userId: user._id,
     username: user.username,
     email: user.email,
     role: user.role
@@ -94,7 +94,7 @@ passport.use(new GoogleStrategy(
           username: profile.displayName,
           email: profile.emails[0].value,
           lastLogin: new Date(),
-          role: 'User',
+          role: 'user',
           notifications: [],
           approvedVendors: [],
         });
@@ -108,16 +108,18 @@ passport.use(new GoogleStrategy(
 ));
 
 // Serialize and deserialize the user
-passport.serializeUser((user, done) => done(null, user.id));
+passport.serializeUser((user, done) => done(null, user.googleId));  // Serialize using googleId
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (googleId, done) => {  // Deserialize using googleId
   try {
-    const user = await User.findById(id);
+    const user = await User.findOne({ googleId });  // Find user by googleId
     done(null, user);
   } catch (err) {
     done(err, null);
   }
 });
+
+
 // Google OAuth Routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -170,16 +172,16 @@ function authenticateJWT(req, res, next) {
   });
 }
 
-// Define rate limiting globally
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
-    message: 'Too many requests from this IP, please try again later.',
-    headers: true,
-});
+// // Define rate limiting globally
+// const globalLimiter = rateLimit({
+//     windowMs: 15 * 60 * 1000, // 15 minutes
+//     max: 100, // Limit each IP to 100 requests per window
+//     message: 'Too many requests from this IP, please try again later.',
+//     headers: true,
+// });
 
-// Apply global rate limiter before all routes
-app.use(globalLimiter);
+// // Apply global rate limiter before all routes
+// app.use(globalLimiter);
 
 // API routes (protected routes example)
 app.use('/api/auth', unlogRoutes);
@@ -211,26 +213,3 @@ mongoose.connect(process.env.MONGO_URI)
     console.log(err);
   });
 
-// STATIC FILES FOR IMAGE UPLOADS
-// app.use(morgan('dev'));
-// app.use(express.urlencoded({ extended:true }));
-// app.use(express.static('public'));
-// app.use('/uploads', express.static('uploads'));
-
-
-// // Define error handling middleware
-// function sessionLogout(err, req, res, next) {
-//   if (err.message && err.message.includes("Cannot read properties of undefined (reading 'username')")) {
-//       // Redirect to the login page
-//       return res.redirect('/login');
-//   }
-
-//   // For other errors, proceed to the next middleware
-//   next(err);
-// }
-
-// app.use(sessionLogout);
-
-// app.use((req, res)=>{
-//     res.status(404).render('404', { title:"404" });
-// });

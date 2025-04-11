@@ -4,8 +4,9 @@ import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-const PropertyImageGallery = ({ images }) => {
+const PropertyImageGallery = ({ images = [] }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // If no images, return default icon
@@ -111,7 +112,7 @@ const Home = () => {
       try {
         const response = await axios.get("http://localhost:4000/api/auth/getProperties", { withCredentials: true });
         if (response.data.success) {
-          console.log("Fetched Properties:", response.data.data);
+          
           setProperties(response.data.data);
         } else {
           console.log("Failed to fetch properties:", response.data.error)
@@ -276,7 +277,7 @@ const Home = () => {
                         <div className="flex items-center space-x-0.5 opacity-70">
                           {(() => {
                             const activeAmenities = Object.entries(property.amenities)
-                              .filter(([_, isAvailable]) => isAvailable)
+                              .filter(([isAvailable]) => isAvailable)
                               .slice(0, 2)
                               .map(([amenity]) => amenity);
 
@@ -330,4 +331,9 @@ const Home = () => {
     </>
   );
 };
+
+PropertyImageGallery.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
+};
+
 export default Home;

@@ -64,10 +64,10 @@ const Navbar = () => {
     }
   };
 
-  const handleSendRequest = () => {
-    setIsMessageModalOpen(true);
-    setIsDropdownOpen(false);
-  };
+  // const handleSendRequest = () => {
+  //   setIsMessageModalOpen(true);
+  //   setIsDropdownOpen(false);
+  // };
 
   const handleMessageSubmit = async (message) => {
     if (!user) {

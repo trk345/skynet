@@ -3,8 +3,10 @@ import { Send, Building, Mail, Phone, MessageSquare, User } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Contact = () => {
+  const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState('welcome'); // 'welcome' or 'contact'
   const [showVendorForm, setShowVendorForm] = useState(false);
@@ -12,6 +14,7 @@ const Contact = () => {
     firstName: '',
     lastName: '',
     email: '',
+    countryCode: "+880",
     mobile: '',
     message: ''
   });
@@ -25,27 +28,45 @@ const Contact = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axios.post("http://localhost:4000/api/user/postVendorRequest", 
-      formData, { withCredentials: true });
-
-    console.log('Form submitted:', formData);
-    // Reset form after submission
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      mobile: '',
-      message: ''
-    });
-    alert('Thank you for your message! We will get back to you soon.');
+  
+    const payload = {
+      ...formData,
+      mobile: `${formData.countryCode}${formData.mobile}`, // Combine for backend
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/user/postVendorRequest",
+        payload,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        console.log("Successfully Request", response.data.data);
+      } else {
+        console.log("Failed Request", response.data.error)
+      }
+      console.log('Form submitted:', payload);
+  
+      // Reset form after submission
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        mobile: '',
+        message: '',
+        countryCode: '+880' // Reset to default or empty if you prefer
+      });
+  
+      navigate('/');
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -120,7 +141,7 @@ const Contact = () => {
                   </p>
                   
                   <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                    Whether you're a business traveler seeking functional workspace or a vacationer in pursuit of luxury, our curated selection offers options to match every preference and requirement.
+                    Whether you&apos;re a business traveler seeking functional workspace or a vacationer in pursuit of luxury, our curated selection offers options to match every preference and requirement.
                   </p>
                   
                   <div className="mt-12">
@@ -160,7 +181,7 @@ const Contact = () => {
             <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">Get In Touch</h1>
             <div className="w-24 h-1 bg-blue-600 mx-auto mb-8 rounded-full"></div>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Have questions or want to join our network? We'd love to hear from you.
+              Have questions or want to join our network? We&apos;d love to hear from you.
             </p>
           </div>
           
@@ -308,16 +329,36 @@ const Contact = () => {
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Phone className="h-5 w-5 text-gray-400" />
                           </div>
-                          <input
-                            type="tel"
-                            id="mobile"
-                            name="mobile"
-                            value={formData.mobile}
-                            onChange={handleInputChange}
-                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="+880 1234567890"
-                            required
-                          />
+                          <div className="flex">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Phone className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <select
+                              name="countryCode"
+                              value={formData.countryCode}
+                              onChange={handleInputChange}
+                              className="pl-10 pr-3 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"
+                              required
+                            >
+                              <option value="+1">+1 (US)</option>
+                              <option value="+44">+44 (UK)</option>
+                              <option value="+61">+61 (AU)</option>
+                              <option value="+91">+91 (IN)</option>
+                              <option value="+880">+880 (BD)</option>
+                              <option value="+971">+971 (UAE)</option>
+                              {/* Add more countries as needed */}
+                            </select>
+                            <input
+                              type="tel"
+                              id="mobile"
+                              name="mobile"
+                              value={formData.mobile}
+                              onChange={handleInputChange}
+                              className="w-full pl-4 pr-3 py-3 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="1234567890"
+                              required
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>

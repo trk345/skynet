@@ -1,13 +1,13 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User } = require('../models/userSchemas');
-const Property = require('../models/propertySchemas');
+const { Property } = require('../models/propertySchemas');
 const mongoose = require('mongoose');
 const validator = require("validator");
 
 function createJWT(user) {
   const payload = {
-    userId: user.id,
+    userId: user._id,
     username: user.username,
     email: user.email,
     role: user.role,

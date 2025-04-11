@@ -617,6 +617,9 @@ const EditProperty = () => {
             {/* Availability */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Availability</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                You can leave this blank, which will specify that the property is available on all dates except dates it is already booked.
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 mb-2">Available From</label>

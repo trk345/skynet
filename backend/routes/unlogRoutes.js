@@ -33,6 +33,13 @@ const signupLimiter = rateLimit({
     headers: true,
 });
 
+// Define rate limiter
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+  });
+
 // Middleware to check authentication
 const authenticateUser = (req, res, next) => {
     let token = req.cookies.token || req.headers.authorization?.split(" ")[1];
@@ -56,17 +63,17 @@ const authenticateUser = (req, res, next) => {
 
 router.get('/me', [loginLimiter, authenticateUser], authMe);
 
+// Get all properties
+router.get("/getProperties", limiter, getProperties)
+// Get a single property
+router.get("/getProperty/:id", limiter, getProperty)
 
 // Logout Route (Clears JWT Cookie)
-router.post('/logout', logout);
+router.post('/logout', limiter, logout);
 // Apply rate limit only to login routes
 router.post('/login', loginLimiter, login);
 router.post('/admin/login', loginLimiter, adminLogin);
 router.post('/signup', signupLimiter, signup);
-// Get all properties
-router.get("/getProperties", getProperties)
-// Get a single property
-router.get("/getProperty/:id", getProperty)
 
 
 module.exports = router;

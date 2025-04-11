@@ -71,6 +71,8 @@ const userSchema = new Schema({
   }],
   bookings: [{
     property: { type: Schema.Types.ObjectId, ref: 'Property' },
+    startdate: { type: Date, required: true },
+    enddate: { type: Date, required: true },
   }],
   favorites: [{
     property: { type: Schema.Types.ObjectId, ref: 'Property' },

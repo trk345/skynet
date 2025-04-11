@@ -5,6 +5,8 @@ const {
     putReadNotifs,
     getUnreadNotifCount,
     postVendorRequest,
+    bookProperty,
+    postReview,
 } = require('../controllers/userControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
@@ -19,8 +21,6 @@ const limiter = rateLimit({
 // // Get all properties
 // router.get("/getProperties", limiter, getProperties)
 
-// Post Vendor Request
-router.post("/postVendorRequest", limiter, postVendorRequest);
 
 // Get all notifications (without authentication middleware)
 router.get('/notifications', limiter, getNotifs);
@@ -28,7 +28,15 @@ router.get('/notifications', limiter, getNotifs);
 // Get unread notification count (without authentication middleware)
 router.get('/notifications/unread-count', limiter, getUnreadNotifCount);
 
+// Post Vendor Request
+router.post("/postVendorRequest", limiter, postVendorRequest);
+
+// Book a property (without authentication middleware)
+router.post('/book-property', limiter, bookProperty);
+
 // Mark notifications as read (without authentication middleware)
 router.put('/notifications/mark-as-read', limiter, putReadNotifs);
+
+router.post("/properties/reviews/:id", limiter, postReview);
 
 module.exports = router;

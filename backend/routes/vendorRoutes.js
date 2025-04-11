@@ -17,16 +17,16 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP, please try again later.'
   });
 
-// Route for creating a property with images
-// Handles multiple image uploads and passes them to createProperty controller
-// Field name 'images' must match the form field name in the frontend
-router.post('/create-property', limiter, upload.array('images'), createProperty);
-
 // Fetch all vendor properties
 router.get("/getProperties", limiter, getProperties);
 
 // Fetch a single property
 router.get("/getProperty/:id", limiter, getProperty);
+
+// Route for creating a property with images
+// Handles multiple image uploads and passes them to createProperty controller
+// Field name 'images' must match the form field name in the frontend
+router.post('/create-property', limiter, upload.array('images'), createProperty);
 
 // Update a property
 router.put('/update-property/:id', limiter, upload.array('newImages'), updateProperty);
