@@ -73,103 +73,93 @@ const getProperty = async (req, res) => {
   }
 }
 
-const updateProperty = async (req, res) => {
+
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
+const sanitizeAndParse = (field, parser = v => v.trim()) => {
+  return field !== undefined ? parser(field) : undefined;
+};
+
+const validateJSON = (jsonStr) => {
   try {
-    const propertyID = req.params.id
-  
-    // Find existing property
-    const existingProperty = await Property.findById(propertyID);
-    if (!existingProperty) {
-      return res.status(404).json({ message: "Property not found" });
+    const parsed = JSON.parse(jsonStr);
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return parsed;
     }
+  } catch {}
+  return null;
+};
 
-    // Sanitize input
-    const updatedData = {};
-    if (req.body.updatedName) updatedData.name = req.body.updatedName.trim();
-    if (req.body.updatedType) updatedData.type = req.body.updatedType.trim();
-    if (req.body.updatedDescription) updatedData.description = req.body.updatedDescription.trim();
-    if (req.body.updatedLocation) updatedData.location = req.body.updatedLocation.trim();
-    if (req.body.updatedAddress) updatedData.address = req.body.updatedAddress.trim();
-    if (req.body.updatedPrice && !isNaN(req.body.updatedPrice)) updatedData.price = Number(req.body.updatedPrice);
-    if (req.body.updatedBedrooms && !isNaN(req.body.updatedBedrooms)) updatedData.bedrooms = Number(req.body.updatedBedrooms);
-    if (req.body.updatedBathrooms && !isNaN(req.body.updatedBathrooms)) updatedData.bathrooms = Number(req.body.updatedBathrooms);
-    if (req.body.updatedSquareFeet !== undefined) {
-      updatedData.squareFeet = req.body.updatedSquareFeet.trim(); // Keep it as a string
-    }
-    if (req.body.updatedMaxGuests && !isNaN(req.body.updatedMaxGuests)) updatedData.maxGuests = Number(req.body.updatedMaxGuests);
+const validateInputFormats = (email, mobile) => {
+  const emailValid = !email || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+  const mobileValid = !mobile || /^\+?[0-9]{10,15}$/.test(mobile);
+  return { emailValid, mobileValid };
+};
 
-    // Validate and parse JSON fields
-    try {
-      if (req.body.updatedAmenities) {
-        const parsedAmenities = JSON.parse(req.body.updatedAmenities);
-        if (typeof parsedAmenities === 'object' && parsedAmenities !== null && !Array.isArray(parsedAmenities)) {
-          updatedData.amenities = parsedAmenities;
-        } else {
-          return res.status(400).json({ message: "Invalid format for amenities" });
-        }
-      }
-      if (req.body.updatedAvailability) {
-        const parsedAvailability = JSON.parse(req.body.updatedAvailability);
-        if (typeof parsedAvailability === 'object' && parsedAvailability !== null && !Array.isArray(parsedAvailability)) {
-          updatedData.availability = parsedAvailability;
-        } else {
-          return res.status(400).json({ message: "Invalid format for availability" });
-        }
-      }
-    } catch (error) {
-      console.log("Error updating property:", error);
-      return res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
-    }
+const handleImageDeletion = (existingImages, removedImages) => {
+  if (!removedImages) return existingImages;
+  if (!Array.isArray(removedImages)) removedImages = [removedImages];
 
-    // Validate email and mobile formats
-    if (req.body.updatedEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(req.body.updatedEmail)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
-    if (req.body.updatedMobile && !/^\+?[0-9]{10,15}$/.test(req.body.updatedMobile)) {
-      return res.status(400).json({ message: "Invalid mobile number format" });
-    }
-
-    updatedData.mobile = req.body.updatedMobile || existingProperty.mobile;
-    updatedData.email = req.body.updatedEmail || existingProperty.email;
-    
-    // Handle removed images
-    let updatedImagePaths = existingProperty.images;
-    let removedImages = req.body.removedImages;
-    if (removedImages) { 
-      if (!Array.isArray(removedImages)) { // If only one image was sent, it will be a string. Convert it to an array.
-        removedImages = [removedImages];
-      }
-      console.log(`Removed Images: ${removedImages}`)
-      updatedImagePaths = updatedImagePaths.filter(image => !removedImages.includes(image)); // Remove images that should be deleted
-
-      // Delete removed images from the server
-      removedImages.forEach(imagePath => {
-        const fullPath = path.join(__dirname, '..', imagePath); // Ensure correct path
-        console.log("fullpath:", fullPath);
-        if (fs.existsSync(fullPath)) {
-          fs.unlink(fullPath, err => {
-            if (err) console.error("Error deleting %s:", fullPath, err);
-          });
-        }
+  removedImages.forEach(imagePath => {
+    const filename = path.basename(imagePath);
+    const fullPath = path.join(UPLOADS_DIR, filename);
+    if (fullPath.startsWith(UPLOADS_DIR) && fs.existsSync(fullPath)) {
+      fs.unlink(fullPath, err => {
+        if (err) console.error(`Error deleting ${fullPath}:`, err);
       });
     }
+  });
 
-    // Append new image paths (if any) to existing ones
-    const newImagePaths = req.files.map(file => file.path); // Get uploaded images' paths 
-    if (newImagePaths) {
-      updatedImagePaths = [...updatedImagePaths, ...newImagePaths];
-    }
+  return existingImages.filter(img => !removedImages.includes(img));
+};
+
+const updateProperty = async (req, res) => {
+  try {
+    const propertyID = req.params.id;
+    const existingProperty = await Property.findById(propertyID);
+    if (!existingProperty) return res.status(404).json({ message: "Property not found" });
+
+    const updatedData = {
+      name: sanitizeAndParse(req.body.updatedName),
+      type: sanitizeAndParse(req.body.updatedType),
+      description: sanitizeAndParse(req.body.updatedDescription),
+      location: sanitizeAndParse(req.body.updatedLocation),
+      address: sanitizeAndParse(req.body.updatedAddress),
+      squareFeet: sanitizeAndParse(req.body.updatedSquareFeet),
+      price: req.body.updatedPrice && !isNaN(req.body.updatedPrice) ? Number(req.body.updatedPrice) : undefined,
+      bedrooms: req.body.updatedBedrooms && !isNaN(req.body.updatedBedrooms) ? Number(req.body.updatedBedrooms) : undefined,
+      bathrooms: req.body.updatedBathrooms && !isNaN(req.body.updatedBathrooms) ? Number(req.body.updatedBathrooms) : undefined,
+      maxGuests: req.body.updatedMaxGuests && !isNaN(req.body.updatedMaxGuests) ? Number(req.body.updatedMaxGuests) : undefined,
+    };
+
+    const amenities = validateJSON(req.body.updatedAmenities);
+    const availability = validateJSON(req.body.updatedAvailability);
+    if (req.body.updatedAmenities && !amenities) return res.status(400).json({ message: "Invalid format for amenities" });
+    if (req.body.updatedAvailability && !availability) return res.status(400).json({ message: "Invalid format for availability" });
+    if (amenities) updatedData.amenities = amenities;
+    if (availability) updatedData.availability = availability;
+
+    const { emailValid, mobileValid } = validateInputFormats(req.body.updatedEmail, req.body.updatedMobile);
+    if (!emailValid) return res.status(400).json({ message: "Invalid email format" });
+    if (!mobileValid) return res.status(400).json({ message: "Invalid mobile number format" });
+
+    updatedData.email = req.body.updatedEmail || existingProperty.email;
+    updatedData.mobile = req.body.updatedMobile || existingProperty.mobile;
+
+    let updatedImagePaths = handleImageDeletion(existingProperty.images, req.body.removedImages);
+    const newImagePaths = req.files.map(file => file.path);
+    updatedImagePaths = [...updatedImagePaths, ...newImagePaths];
     updatedData.images = updatedImagePaths;
 
-    // Update property
-    await Property.findByIdAndUpdate(propertyID, updatedData,  { new: true });
+    await Property.findByIdAndUpdate(propertyID, updatedData, { new: true });
+    res.status(200).json({ message: "Property Updated" });
 
-    res.status(200).json({ message: "Property Updated" /*, property: updatedProperty*/ });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
-  };
-}
+  }
+};
+
 
 const deleteProperty = async (req, res) => {
   try {
@@ -182,10 +172,15 @@ const deleteProperty = async (req, res) => {
 
     // Delete images from the server
     property.images.forEach(imagePath => {
-      const fullPath = path.join(__dirname, '..', imagePath); // Ensure correct path
-      if (fs.existsSync(fullPath)) {
+      const filename = path.basename(imagePath); // Extract just the file name to prevent traversal
+      const fullPath = path.join(UPLOADS_DIR, filename); // Construct full path safely within uploads directory
+
+      // Check if the file is within the uploads directory
+      if (fullPath.startsWith(UPLOADS_DIR) && fs.existsSync(fullPath)) {
         fs.unlink(fullPath, err => {
-          if (err) console.error("Error deleting %s:", fullPath, err);
+          if (err) {
+            console.error(`Error deleting ${fullPath}:`, err);
+          }
         });
       }
     });
