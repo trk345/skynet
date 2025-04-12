@@ -56,6 +56,7 @@ const getProperties = async (req, res) => {
       res.status(200).json({ success: true, data: properties });
     }
   } catch (error) {
+    console.log("Error fetching properties:", error);
     res.status(500).json({ success: false, error: "Could not fetch vendor's properties in server"});
   }
 }
@@ -67,6 +68,7 @@ const getProperty = async (req, res) => {
       res.status(200).json({ success: true, data: property });
     }
   } catch (error) {
+    console.log("Error fetching property:", error);
     res.status(500).json({ success: false, error: "Could not fetch vendor's property in server"});
   }
 }
@@ -115,6 +117,7 @@ const updateProperty = async (req, res) => {
         }
       }
     } catch (error) {
+      console.log("Error updating property:", error);
       return res.status(400).json({ message: "Invalid JSON format for amenities or availability" });
     }
 
@@ -195,7 +198,8 @@ const deleteProperty = async (req, res) => {
     );
     res.status(200).json({ success: true, message:"Property deleted" });
   } catch (error) {
-    res.status(500).json({ success: false, error: error})
+    console.log("Error deleting property:", error);
+    res.status(500).json({ success: false, message: "Server error occurred while deleting the property"})
   }
 }
 
