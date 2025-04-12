@@ -44,36 +44,39 @@ const PropertyForm = () => {
   // State for tracking validation errors
   const [errors, setErrors] = useState({});
 
-  if (isEditMode) {
+  
     useEffect(() => {
-      const getProperty = async () => {
-        try {
-          const response = await axios.get(`http://localhost:4000/api/vendor/getProperty/${id}`, { withCredentials: true});
-          if (response.data.success) {
-            const fetchedProperty = response.data.data;
-            fetchedProperty.squareFeet = fetchedProperty.squareFeet == "null" ? "" : fetchedProperty.squareFeet;
-            setProperty(fetchedProperty)
+      if (isEditMode) {
+        const getProperty = async () => {
+          try {
+            const response = await axios.get(`http://localhost:4000/api/vendor/getProperty/${id}`, { withCredentials: true});
+            if (response.data.success) {
+              const fetchedProperty = response.data.data;
+              fetchedProperty.squareFeet = fetchedProperty.squareFeet == "null" ? "" : fetchedProperty.squareFeet;
+              setProperty(fetchedProperty)
 
-            // Convert stored images into preview format
-            const storedImages = Array.isArray(response.data.data.images) // Check if property had images
-            ? response.data.data.images.map((image) => ({
-                preview: `http://localhost:4000/${image}`,
-                file: image, // No file data for already stored images
-                stored: true, // Mark as existing image from DB
-                })) 
-            : [];
-            setPreview(storedImages);
+              // Convert stored images into preview format
+              const storedImages = Array.isArray(response.data.data.images) // Check if property had images
+              ? response.data.data.images.map((image) => ({
+                  preview: `http://localhost:4000/${image}`,
+                  file: image, // No file data for already stored images
+                  stored: true, // Mark as existing image from DB
+                  })) 
+              : [];
+              setPreview(storedImages);
 
-          } else {
-            console.error("Error fetching property:", response.data.error)
+            } else {
+              console.error("Error fetching property:", response.data.error)
+            }
+          } catch (error) {
+            console.error("Error fetching property:", error);
           }
-        } catch (error) {
-          console.error("Error fetching property:", error);
         }
+        getProperty();
       }
-      getProperty();
-    }, [id])
-  }
+    }, 
+  [id])
+  
 
   const propertyTypes = [
     { id: 'standard-room', name: 'Standard Room' },
