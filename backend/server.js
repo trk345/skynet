@@ -187,7 +187,7 @@ function authenticateJWT(req, res, next) {
 app.use('/api/auth', unlogRoutes);
 app.use('/api/admin', authenticateJWT, adminRoutes); // Protected
 app.use('/api/user', authenticateJWT, userRoutes);  // Protected
-app.use('/api/vendor', authenticateJWT, vendorRoutes); // Protected
+app.use('/api/vendor', [limiter, authenticateJWT], vendorRoutes); // Protected
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
