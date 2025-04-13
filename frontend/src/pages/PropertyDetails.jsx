@@ -461,7 +461,7 @@ const PropertyDetails = () => {
                                     <div className="text-sm text-gray-600">Bathrooms</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-lg font-bold text-gray-800">{property.squareFeet || 'N/A'}</div>
+                                    <div className="text-lg font-bold text-gray-800">{property.squareFeet || 'Not Specified'}</div>
                                     <div className="text-sm text-gray-600">Square Feet</div>
                                 </div>
                                 <div className="text-center">

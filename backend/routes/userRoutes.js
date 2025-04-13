@@ -10,6 +10,7 @@ const {
 } = require('../controllers/userControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
+const { body } = require('express-validator');
 
 // Define rate limiter
 const limiter = rateLimit({
@@ -17,9 +18,6 @@ const limiter = rateLimit({
     max: 100, // Limit each IP to 100 requests per windowMs
     message: 'Too many requests from this IP, please try again later.'
   });
-
-// // Get all properties
-// router.get("/getProperties", limiter, getProperties)
 
 
 // Get all notifications (without authentication middleware)
@@ -31,8 +29,26 @@ router.get('/notifications/unread-count', limiter, getUnreadNotifCount);
 // Post Vendor Request
 router.post("/postVendorRequest", limiter, postVendorRequest);
 
+// Middleware to sanitize req.body in booking
+const bookValidationRules = [
+  body('propertyId')
+    .isMongoId().withMessage('Invalid property ID'),
+
+  body('checkIn')
+    .isISO8601().withMessage('Invalid check-in date'),
+
+  body('checkOut')
+    .isISO8601().withMessage('Invalid check-out date'),
+
+  body('guests')
+    .isInt({ min: 1 }).withMessage('Guests must be at least 1'),
+
+  body('totalAmount')
+    .isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+];
+
 // Book a property (without authentication middleware)
-router.post('/book-property', limiter, bookProperty);
+router.post('/book-property', [limiter, bookValidationRules], bookProperty);
 
 // Mark notifications as read (without authentication middleware)
 router.put('/notifications/mark-as-read', limiter, putReadNotifs);

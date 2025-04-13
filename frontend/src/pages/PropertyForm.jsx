@@ -697,7 +697,7 @@ const PropertyForm = () => {
                     value={property.availability?.endDate ? new Date(property.availability.endDate).toISOString().split('T')[0] : ''}
                     min={
                       property.availability?.startDate
-                      ? new Date(property.availability.startDate).toISOString().split('T')[0]
+                      ? new Date(new Date(property.availability.startDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                       : new Date().toISOString().split('T')[0]  // fallback to today if no start date
                     } 
                     onChange={handleAvailabilityChange}

@@ -4,6 +4,7 @@ const { Booking } = require('../models/bookingSchemas');
 const { Property } = require('../models/propertySchemas'); 
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
 
 // Middleware to verify JWT and extract userId
 const verifyUser = (req, res) => {
@@ -116,6 +117,12 @@ const putReadNotifs = async (req, res) => {
 const bookProperty = async (req, res) => {
     const userId = verifyUser(req, res);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { propertyId, checkIn, checkOut, guests, totalAmount } = req.body;
 
     try {
@@ -153,8 +160,8 @@ const bookProperty = async (req, res) => {
 
         // 7. Availability window check
         if (
-            (property.availability?.startDate && checkInDate < new Date(property.availability.startDate)) ||
-            (property.availability?.endDate && checkOutDate > new Date(property.availability.endDate))
+            (property.availability?.startDate && checkInDate < new Date(property.availability.startDate).setHours(0, 0, 0, 0)) || //normalize to midnight to match with DatePicker time
+            (property.availability?.endDate && checkOutDate > new Date(property.availability.endDate).setHours(0, 0, 0, 0))
         ) {
             return res.status(400).json({ message: "Booking is outside the property's availability range." });
         }

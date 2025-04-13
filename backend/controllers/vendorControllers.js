@@ -105,7 +105,7 @@ const handleImageDeletion = (existingImages, removedImages) => {
     const fullPath = path.join(UPLOADS_DIR, filename);
     if (fullPath.startsWith(UPLOADS_DIR) && fs.existsSync(fullPath)) {
       fs.unlink(fullPath, err => {
-        if (err) console.error(`Error deleting ${fullPath}:`, err);
+        if (err) console.error("Error deleting %s:", fullPath, err);
       });
     }
   });
@@ -136,7 +136,14 @@ const updateProperty = async (req, res) => {
     const availability = validateJSON(req.body.updatedAvailability);
     if (req.body.updatedAmenities && !amenities) return res.status(400).json({ message: "Invalid format for amenities" });
     if (req.body.updatedAvailability && !availability) return res.status(400).json({ message: "Invalid format for availability" });
-    if (amenities) updatedData.amenities = amenities;
+    if (amenities) {
+      const allowedAmenities = ['wifi', 'parking', 'breakfast', 'airConditioning', 'heating', 'tv', 'kitchen', 'workspace'];
+      updatedData.amenities = Object.fromEntries(
+        Object.entries(amenities).filter(([key, value]) =>
+          allowedAmenities.includes(key) && typeof value === 'boolean'
+        )
+      );
+    }
     if (availability) updatedData.availability = availability;
 
     const { emailValid, mobileValid } = validateInputFormats(req.body.updatedEmail, req.body.updatedMobile);
