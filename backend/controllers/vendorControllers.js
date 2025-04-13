@@ -144,14 +144,29 @@ const updateProperty = async (req, res) => {
         )
       );
     }
-    if (availability) updatedData.availability = availability;
+    if (availability) {
+      const { startDate, endDate } = availability;
+      const isValidDate = date => typeof date === 'string' && !isNaN(Date.parse(date));
+    
+      if (!isValidDate(startDate) || !isValidDate(endDate)) {
+        return res.status(400).json({ message: "Invalid date format in availability" });
+      }
+    
+      updatedData.availability = { startDate, endDate };
+    }
+    
 
     const { emailValid, mobileValid } = validateInputFormats(req.body.updatedEmail, req.body.updatedMobile);
     if (!emailValid) return res.status(400).json({ message: "Invalid email format" });
     if (!mobileValid) return res.status(400).json({ message: "Invalid mobile number format" });
 
-    updatedData.email = req.body.updatedEmail || existingProperty.email;
-    updatedData.mobile = req.body.updatedMobile || existingProperty.mobile;
+    updatedData.email = emailValid && req.body.updatedEmail
+      ? sanitizeAndParse(req.body.updatedEmail)
+      : existingProperty.email;
+
+    updatedData.mobile = mobileValid && req.body.updatedMobile
+      ? sanitizeAndParse(req.body.updatedMobile)
+      : existingProperty.mobile;
 
     let updatedImagePaths = handleImageDeletion(existingProperty.images, req.body.removedImages);
     const newImagePaths = req.files.map(file => file.path);
@@ -176,7 +191,7 @@ const deleteProperty = async (req, res) => {
     if (!property) {
       res.status(404).json({ message: "Property not found" });
     }
-
+    
     // Delete images from the server
     property.images.forEach(imagePath => {
       const filename = path.basename(imagePath); // Extract just the file name to prevent traversal

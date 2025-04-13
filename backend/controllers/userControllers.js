@@ -124,6 +124,10 @@ const bookProperty = async (req, res) => {
     }
 
     const { propertyId, checkIn, checkOut, guests, totalAmount } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+        return res.status(400).json({ message: 'Invalid Property ID' });
+      }
 
     try {
         // 1. Validate required fields
