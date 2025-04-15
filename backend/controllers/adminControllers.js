@@ -129,9 +129,9 @@ const updateVendorRequest = async (req, res) => {
 
     if (action === "approve") {
       updateFields.role = "Vendor";
-      updateFields.$push = { notifications: { message: "Your vendor request has been approved! 🎉", read: false } };
+      updateFields.$push = { notifications: { message: "Your vendor request has been approved! 🎉", type: "adminMessage", read: false } };
     } else if (action === "reject") {
-      updateFields.$push = { notifications: { message: "Your vendor request has been rejected. ❌", read: false } };
+      updateFields.$push = { notifications: { message: "Your vendor request has been rejected. ❌", type: "adminMessage", read: false } };
     } else {
       await session.abortTransaction();
       session.endSession();

@@ -7,6 +7,7 @@ import Footer from '../components/Footer.jsx';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
 
 function PropertyImageGallery({ images = [] }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -335,6 +336,33 @@ const PropertyDetails = () => {
         }
       };
 
+
+      const handleUnbook = async (bookingId) => {
+        const isConfirmed = window.confirm("Are you sure you want to cancel your booking?");
+    
+        if (!isConfirmed) {
+            return; // If user cancels, exit the function
+        }
+    
+        try {
+            const response = await axios.delete(`http://localhost:4000/api/user/properties/bookings/${bookingId}`, {
+                withCredentials: true
+            });
+    
+            if (response.data.success) {
+                toast.success("Booking cancelled successfully.");
+                window.location.reload(); // or update the UI more gracefully
+            } else {
+                toast.error("Failed to cancel booking.");
+            }
+        } catch (error) {
+            console.error("Error cancelling booking:", error);
+            toast.error(error.response?.data?.message || "An error occurred while cancelling booking.");
+        }
+    };
+    
+
+
     const renderInteractiveStars = () => {
     return (
         <div className="flex space-x-1 mb-2">
@@ -616,10 +644,43 @@ const PropertyDetails = () => {
                             <p className="text-gray-600">No reviews yet.</p>
                         )}
                         </div>
+
+                        {/* Booked Dates */}
+                        <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                            Booked Dates
+                        </h2>
+
+                        {property.bookedDates && property.bookedDates.length > 0 ? (
+                            <ul className="space-y-4 text-gray-700 text-sm">
+                            {property.bookedDates.map((date, index) => (
+                                <li key={index} className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
+                                <span className="text-gray-900 font-medium">
+                                    {formatDate(date.checkIn)} — {formatDate(date.checkOut)}
+                                </span>
+
+                                {/* Show "Unbook" if current user booked this */}
+                                {user && date.userId === user._id && (
+                                    <button
+                                    onClick={() => handleUnbook(date._id)}
+                                    className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
+                                    >
+                                    Unbook
+                                    </button>
+                                )}
+                                </li>
+                            ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-600 text-lg">This property has not been booked yet.</p>
+                        )}
+                        </div>
+
                     </div>
+
                     
                     {/* Booking Form */}
-                    {property.status === "available" ? (
+                    {property?.status === "available" && user?._id !== property?.userID ? (
                     <div className="lg:col-span-1">
                         <div className="bg-white shadow-md rounded-lg p-6 sticky top-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Now</h2>
@@ -728,10 +789,15 @@ const PropertyDetails = () => {
                             </div>
                         </div>
                     </div>
-                    ) : (
-                    <p className="text-red-500 text-sm mt-2 text-center">
-                    This property is currently {property.status}
-                    </p>)}
+                    ) : user?._id === property?.userID ? (
+                        <p className="text-gray-600 text-sm mt-2 text-center italic">
+                          You cannot book your own property.
+                        </p>
+                      ) : (
+                        <p className="text-red-500 text-sm mt-2 text-center">
+                          This property is currently {property?.status}
+                        </p>
+                    )}
                 </div>
             </div>
             

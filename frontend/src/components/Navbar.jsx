@@ -7,9 +7,9 @@ import Notifications from "./Notifications";
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  // const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [isPending, setIsPending] = useState(false);
+  const [isPending] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 

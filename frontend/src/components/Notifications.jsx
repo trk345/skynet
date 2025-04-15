@@ -46,6 +46,12 @@ const Notifications = () => {
     }
   };
 
+  // Format the notification time
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   useEffect(() => {
     fetchUnreadCount();
   }, []);
@@ -71,7 +77,10 @@ const Notifications = () => {
               {Array.isArray(notifications) &&
                 notifications.map((notif) => (
                   <li key={notif._id} className="p-2 border-b border-gray-200">
-                    {notif.message}
+                    <div className="flex justify-between">
+                      <span>{notif.message}</span>
+                      <span className="text-xs text-gray-500">{formatTime(notif.createdAt)}</span>
+                    </div>
                   </li>
                 ))}
             </ul>

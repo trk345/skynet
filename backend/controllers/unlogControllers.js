@@ -16,6 +16,18 @@ function createJWT(user) {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 }
 
+const getUserIdFromToken = (req) => {
+  const token = req.cookies.token;
+  if (!token) return null;
+
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      return decoded.userId;
+  } catch {
+      return null;
+  }
+};
+
 // Login Controller
 const login = async (req, res) => {
   try {
@@ -179,15 +191,49 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logout successful" });
 };
 
-// Fetch all Properties
-const getProperties = async(req, res) => {
-    try {
-        const properties = await Property.find();
-        res.status(200).json({ success: true, data: properties });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "Could not fetch properties in server" });
+const getProperties = async (req, res) => {
+  const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
+
+  try {
+    const { type, location, price, guests, checkIn, checkOut, averageRating } = req.query;
+
+    const filters = {};
+
+    if (type) filters.type = type;
+
+    if (location) {
+      filters.location = { $regex: location, $options: 'i' }; // case-insensitive substring match
     }
-}
+
+    if (price) filters.price = { $lte: parseFloat(price) };
+
+    if (guests) filters.guests = { $lte: parseInt(guests) }; // max number of guests
+
+    if (checkIn && checkOut) {
+      filters.availability = {
+        $elemMatch: {
+          checkIn: { $lte: new Date(checkOut) },
+          checkOut: { $gte: new Date(checkIn) }
+        }
+      };
+    }
+
+    if (averageRating) filters.averageRating = { $gte: parseFloat(averageRating) };
+
+    // Exclude properties owned by the current user
+    if (userId) {
+      filters.userID = { $ne: userId };
+    }
+
+    const properties = await Property.find(filters);
+
+    res.status(200).json({ success: true, data: properties });
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    res.status(500).json({ success: false, error: "Could not fetch properties" });
+  }
+};
+
 
 // Fetch a single Property
 const getProperty = async (req, res) => {

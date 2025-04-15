@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Calendar, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from 'axios';
@@ -88,11 +88,15 @@ const PropertyImageGallery = ({ images = [] }) => {
 
 const Home = () => {
   const [searchParams, setSearchParams] = useState({
+    type: '',
     location: '',
+    price: '',
+    guests: '',
     checkIn: '',
     checkOut: '',
-    guests: 1
+    averageRating: ''
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSearchParams(prev => ({
@@ -100,9 +104,22 @@ const Home = () => {
       [name]: value
     }));
   };
-  const handleSearch = () => {
-    // Placeholder for search functionality
-    console.log('Searching with params:', searchParams);
+  const handleSearch = async () => {
+    try {
+      // Send the search parameters to the backend
+      const response = await axios.get("http://localhost:4000/api/auth/getProperties", {
+        withCredentials: true,
+        params: { ...searchParams } // send all search params
+      });
+  
+      if (response.data.success) {
+        setProperties(response.data.data); // Set the filtered properties
+      } else {
+        console.log("Failed to fetch properties:", response.data.error);
+      }
+    } catch (error) {
+      console.log("Error fetching properties:", error);
+    }
   };
 
   const [properties, setProperties] = useState([]);
@@ -110,20 +127,23 @@ const Home = () => {
   useEffect(() => {
     const getProperties = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/getProperties", { withCredentials: true });
+        const response = await axios.get("http://localhost:4000/api/auth/getProperties", { 
+          withCredentials: true,
+          params: { ...searchParams } // Send the current search params on load
+        });
+  
         if (response.data.success) {
-          
           setProperties(response.data.data);
         } else {
-          console.log("Failed to fetch properties:", response.data.error)
+          console.log("Failed to fetch properties:", response.data.error);
         }
       } catch (error) {
-          console.log("Error fetchng properties:", error);
+        console.log("Error fetching properties:", error);
       }
-    }
-
+    };
+  
     getProperties();
-  }, [])
+  }, [searchParams]); // Add searchParams as a dependency to fetch properties whenever search params change
 
   return (
     <>
@@ -135,56 +155,84 @@ const Home = () => {
         <h1 className="text-4xl font-bold mb-4 text-gray-800">Find Your Perfect Room</h1>
         <p className="text-xl text-gray-600 mb-8">Discover and book rooms effortlessly across various locations</p>
         {/* Search Container */}
-        <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Location Input */}
-            <div className="relative">
-              <MapPin className="absolute top-3 left-3 text-gray-400" size={20} />
-              <input
-                type="text"
-                name="location"
-                placeholder="Location"
-                value={searchParams.location}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            {/* Check-in Date */}
-            <div className="relative">
-              <Calendar className="absolute top-3 left-3 text-gray-400" size={20} />
-              <input
-                type="date"
-                name="checkIn"
-                value={searchParams.checkIn}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            {/* Check-out Date */}
-            <div className="relative">
-              <Calendar className="absolute top-3 left-3 text-gray-400" size={20} />
-              <input
-                type="date"
-                name="checkOut"
-                value={searchParams.checkOut}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Type */}
+            <select
+              name="type"
+              value={searchParams.type}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Property Type</option>
+              <option value="standard-room">Standard Room</option>
+              <option value="luxury-room">Luxury Room</option>
+              <option value="business-suite">Business Suite</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Villa">Villa</option>
+            </select>
+
+            {/* Location */}
+            <input
+              type="text"
+              name="location"
+              placeholder="Location"
+              value={searchParams.location}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Price */}
+            <input
+              type="number"
+              name="price"
+              placeholder="Max Price"
+              value={searchParams.price}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
             {/* Guests */}
-            <div className="relative">
-              <Users className="absolute top-3 left-3 text-gray-400" size={20} />
-              <input
-                type="number"
-                name="guests"
-                min="1"
-                value={searchParams.guests}
-                onChange={handleInputChange}
-                placeholder="Guests"
-                className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="number"
+              name="guests"
+              min="1"
+              value={searchParams.guests}
+              onChange={handleInputChange}
+              placeholder="Guests"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Check-in */}
+            <input
+              type="date"
+              name="checkIn"
+              value={searchParams.checkIn}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Check-out */}
+            <input
+              type="date"
+              name="checkOut"
+              value={searchParams.checkOut}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Average Rating */}
+            <input
+              type="number"
+              step="1"
+              name="averageRating"
+              placeholder="Min Rating"
+              value={searchParams.averageRating}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
+
           {/* Search Button */}
           <button 
             onClick={handleSearch}
@@ -277,7 +325,7 @@ const Home = () => {
                         <div className="flex items-center space-x-0.5 opacity-70">
                           {(() => {
                             const activeAmenities = Object.entries(property.amenities)
-                              .filter(([_, isAvailable]) => isAvailable)
+                              .filter(([isAvailable]) => isAvailable)
                               .slice(0, 2)
                               .map(([amenity]) => amenity);
 

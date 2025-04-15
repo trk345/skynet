@@ -7,6 +7,7 @@ const {
     postVendorRequest,
     bookProperty,
     postReview,
+    deleteBooking,
 } = require('../controllers/userControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
@@ -50,9 +51,14 @@ const bookValidationRules = [
 // Book a property (without authentication middleware)
 router.post('/book-property', [limiter, bookValidationRules], bookProperty);
 
+router.post("/properties/reviews/:id", limiter, postReview);
+
+
 // Mark notifications as read (without authentication middleware)
 router.put('/notifications/mark-as-read', limiter, putReadNotifs);
 
-router.post("/properties/reviews/:id", limiter, postReview);
+// http://localhost:4000/api/bookings/${bookingId}
+// DELETE /api/bookings/:id
+router.delete("/properties/bookings/:id", limiter, deleteBooking);
 
 module.exports = router;
