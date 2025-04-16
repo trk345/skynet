@@ -226,6 +226,34 @@ const getProperties = async (req, res) => {
     }
 
     const properties = await Property.find(filters);
+    // Sanitize and validate user inputs
+    if (req.query.type && typeof req.query.type !== 'string') {
+      return res.status(400).json({ success: false, error: "Invalid type format" });
+    }
+
+    if (req.query.location && typeof req.query.location !== 'string') {
+      return res.status(400).json({ success: false, error: "Invalid location format" });
+    }
+
+    if (req.query.price && isNaN(parseFloat(req.query.price))) {
+      return res.status(400).json({ success: false, error: "Invalid price format" });
+    }
+
+    if (req.query.guests && isNaN(parseInt(req.query.guests))) {
+      return res.status(400).json({ success: false, error: "Invalid guests format" });
+    }
+
+    if (req.query.checkIn && isNaN(Date.parse(req.query.checkIn))) {
+      return res.status(400).json({ success: false, error: "Invalid check-in date format" });
+    }
+
+    if (req.query.checkOut && isNaN(Date.parse(req.query.checkOut))) {
+      return res.status(400).json({ success: false, error: "Invalid check-out date format" });
+    }
+
+    if (req.query.averageRating && isNaN(parseFloat(req.query.averageRating))) {
+      return res.status(400).json({ success: false, error: "Invalid average rating format" });
+    }
 
     res.status(200).json({ success: true, data: properties });
   } catch (error) {
