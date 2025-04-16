@@ -357,6 +357,19 @@ const deleteBooking = async (req, res) => {
     }
 };
 
+const getBookings = async (req, res) => {
+    try {
+        const userId = verifyUser(req, res);
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+        const bookings = await Booking.find({ userId: userId }).populate("propertyId");
+        if (!bookings) return res.status(404).json({ message: "No bookings found" });
+        res.status(200).json({ success: true, data: bookings});
+    } catch (error) {
+        console.log("Error fetching bookings:", error);
+        res.status(500).json({ success: false, message: "Could not fetch bookings in server" });
+    }
+}
+
 module.exports = {
     putReadNotifs,
     getNotifs,
@@ -365,4 +378,5 @@ module.exports = {
     bookProperty,
     postReview,
     deleteBooking,
+    getBookings,
 };

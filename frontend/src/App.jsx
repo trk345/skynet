@@ -11,7 +11,7 @@ import UserManagementPage from './pages/AdminUserManagement.jsx'
 import RoomManagementPage from './pages/AdminRoomManagement.jsx'
 import BookingManagementPage from './pages/AdminBookingManagement.jsx'
 import VendorRequestPage from './pages/AdminVendorRequests.jsx'
-import VendorDashboard from './pages/VendorDashboard.jsx'
+import UserDashboard from './pages/UserDashboard.jsx'
 import AuthSuccess from './components/AuthSuccess.jsx'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,7 +35,7 @@ function App() {
         <Route path="/admin/bookings" element={<BookingManagementPage />} />
         <Route path="/admin/requests" element={<VendorRequestPage />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
-        <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+        <Route path="/user-dashboard" element={<UserDashboard />} />
       </Routes>
 
       {/* Toasts will render globally from here */}

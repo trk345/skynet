@@ -412,7 +412,7 @@ const PropertyForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 mb-2">
-                    Property Name*
+                    Property Name* (maximum 15 characters)
                     {hasError('name') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.name}</span>
                     )}
@@ -422,6 +422,7 @@ const PropertyForm = () => {
                     type="text"
                     name="name"
                     value={property.name}
+                    maxLength = {15}
                     onChange={handleInputChange}
                     required
                     className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -449,7 +450,7 @@ const PropertyForm = () => {
                 
                 <div className="md:col-span-2">
                   <label className="block text-gray-700 mb-2">
-                    Description*
+                    Description* 
                     {hasError('description') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.description}</span>
                     )}
@@ -476,7 +477,7 @@ const PropertyForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-gray-700 mb-2">
-                    City/Area*
+                    City/Area* (maximum 25 characters)
                     {hasError('location') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.location}</span>
                     )}
@@ -488,6 +489,7 @@ const PropertyForm = () => {
                       type="text"
                       name="location"
                       value={property.location}
+                      maxLength={25}
                       onChange={handleInputChange}
                       required
                       className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${

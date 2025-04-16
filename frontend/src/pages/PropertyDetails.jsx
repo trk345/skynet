@@ -770,7 +770,7 @@ const PropertyDetails = () => {
                                         type="button"
                                         onClick={handleBooking}
                                         disabled={!bookingDates.checkIn || !bookingDates.checkOut || property.status !== 'available' || user === null}
-                                        className={`w-full py-3 rounded-md text-white font-semibold ${
+                                        className={`w-full py-3 rounded-md text-white font-semibold cursor-pointer ${
                                             property.status === 'available' && bookingDates.checkIn && bookingDates.checkOut && user !== null
                                                 ? 'bg-blue-600 hover:bg-blue-700 transition duration-300'
                                                 : 'bg-gray-400 cursor-not-allowed'

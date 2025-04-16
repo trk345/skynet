@@ -8,6 +8,7 @@ const {
     bookProperty,
     postReview,
     deleteBooking,
+    getBookings,
 } = require('../controllers/userControllers');
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
@@ -22,13 +23,16 @@ const limiter = rateLimit({
 
 
 // Get all notifications (without authentication middleware)
-router.get('/notifications', limiter, getNotifs);
+router.get('/notifications', getNotifs);
 
 // Get unread notification count (without authentication middleware)
-router.get('/notifications/unread-count', limiter, getUnreadNotifCount);
+router.get('/notifications/unread-count', getUnreadNotifCount);
 
 // Post Vendor Request
-router.post("/postVendorRequest", limiter, postVendorRequest);
+router.post("/postVendorRequest", postVendorRequest);
+
+// Get a user's bookings
+router.get('/getBookings', getBookings);
 
 // Middleware to sanitize req.body in booking
 const bookValidationRules = [
@@ -49,16 +53,15 @@ const bookValidationRules = [
 ];
 
 // Book a property (without authentication middleware)
-router.post('/book-property', [limiter, bookValidationRules], bookProperty);
+router.post('/book-property', bookValidationRules, bookProperty);
 
-router.post("/properties/reviews/:id", limiter, postReview);
+router.post("/properties/reviews/:id", postReview);
 
 
 // Mark notifications as read (without authentication middleware)
-router.put('/notifications/mark-as-read', limiter, putReadNotifs);
+router.put('/notifications/mark-as-read', putReadNotifs);
 
-// http://localhost:4000/api/bookings/${bookingId}
 // DELETE /api/bookings/:id
-router.delete("/properties/bookings/:id", limiter, deleteBooking);
+router.delete("/properties/bookings/:id", deleteBooking);
 
 module.exports = router;

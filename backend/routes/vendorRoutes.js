@@ -18,21 +18,21 @@ const limiter = rateLimit({
   });
 
 // Fetch all vendor properties
-router.get("/getProperties", limiter, getProperties);
+router.get("/getProperties", getProperties);
 
 // Fetch a single property
-router.get("/getProperty/:id", limiter, getProperty);
+router.get("/getProperty/:id", getProperty);
 
 // Route for creating a property with images
 // Handles multiple image uploads and passes them to createProperty controller
 // Field name 'images' must match the form field name in the frontend
-router.post('/create-property', limiter, upload.array('images'), createProperty);
+router.post('/create-property', upload.array('images'), createProperty);
 
 // Update a property
-router.put('/update-property/:id', limiter, upload.array('newImages'), updateProperty);
+router.put('/update-property/:id', upload.array('newImages'), updateProperty);
 
 // Delete a property
-router.delete('/deleteProperty/:id', limiter, deleteProperty);
+router.delete('/deleteProperty/:id', deleteProperty);
 
 
 

@@ -64,12 +64,12 @@ const authenticateUser = (req, res, next) => {
 router.get('/me', [loginLimiter, authenticateUser], authMe);
 
 // Get all properties
-router.get("/getProperties", limiter, getProperties)
+router.get("/getProperties", getProperties)
 // Get a single property
-router.get("/getProperty/:id", limiter, getProperty)
+router.get("/getProperty/:id", getProperty)
 
 // Logout Route (Clears JWT Cookie)
-router.post('/logout', limiter, logout);
+router.post('/logout', logout);
 // Apply rate limit only to login routes
 router.post('/login', loginLimiter, login);
 router.post('/admin/login', loginLimiter, adminLogin);
