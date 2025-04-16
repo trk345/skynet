@@ -168,8 +168,8 @@ const Home = () => {
               <option value="standard-room">Standard Room</option>
               <option value="luxury-room">Luxury Room</option>
               <option value="business-suite">Business Suite</option>
-              <option value="Apartment">Apartment</option>
-              <option value="Villa">Villa</option>
+              <option value="apartment">Apartment</option>
+              <option value="villa">Villa</option>
             </select>
 
             {/* Location */}

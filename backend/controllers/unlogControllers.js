@@ -198,8 +198,11 @@ const getProperties = async (req, res) => {
     const { type, location, price, guests, checkIn, checkOut, averageRating } = req.query;
 
         // Sanitize and validate user inputs
-        if (type && typeof type !== 'string') {
-          return res.status(400).json({ success: false, error: "Invalid type format" });
+        const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
+        if (type) {
+          if (!validTypes.includes(type)) {
+            return res.status(400).json({ success: false, error: "Invalid type" });
+          }
         }
     
         if (location && typeof location !== 'string') {
