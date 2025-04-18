@@ -195,7 +195,7 @@ const getProperties = async (req, res) => {
   const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
 
   try {
-    const { type, location, price, guests, checkIn, checkOut, averageRating } = req.query;
+    const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
 
         // Sanitize and validate user inputs
         const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
@@ -213,7 +213,7 @@ const getProperties = async (req, res) => {
           return res.status(400).json({ success: false, error: "Invalid price format" });
         }
     
-        if (guests && isNaN(parseInt(guests))) {
+        if (maxGuests && isNaN(parseInt(maxGuests))) {
           return res.status(400).json({ success: false, error: "Invalid guests format" });
         }
     
@@ -239,16 +239,19 @@ const getProperties = async (req, res) => {
 
     if (price) filters.price = { $lte: parseFloat(price) };
 
-    if (guests) filters.guests = { $lte: parseInt(guests) }; // max number of guests
+    if (maxGuests) filters.maxGuests = { $lte: parseInt(maxGuests) }; // max number of guests
 
     if (checkIn && checkOut) {
-      filters.availability = {
-        $elemMatch: {
-          checkIn: { $lte: new Date(checkOut) },
-          checkOut: { $gte: new Date(checkIn) }
+      filters.bookedDates = {
+        $not: {
+          $elemMatch: {
+            checkIn: { $lt: new Date(checkOut) },
+            checkOut: { $gt: new Date(checkIn) }
+          }
         }
       };
     }
+    
 
     if (averageRating) filters.averageRating = { $gte: parseFloat(averageRating) };
 

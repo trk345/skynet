@@ -91,7 +91,7 @@ const Home = () => {
     type: '',
     location: '',
     price: '',
-    guests: '',
+    maxGuests: '',
     checkIn: '',
     checkOut: '',
     averageRating: ''
@@ -195,11 +195,10 @@ const Home = () => {
             {/* Guests */}
             <input
               type="number"
-              name="guests"
-              min="1"
-              value={searchParams.guests}
+              name="maxGuests"
+              value={searchParams.maxGuests}
               onChange={handleInputChange}
-              placeholder="Guests"
+              placeholder="Max Guests"
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
