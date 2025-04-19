@@ -39,7 +39,7 @@ function PropertyImageGallery({ images = [] }) {
             <div className="relative w-full h-[500px] overflow-hidden rounded-lg">
                 {/* Main Image */}
                 <img 
-                    src={`http://localhost:4000/${images[currentImageIndex]}`} 
+                    src={`${import.meta.env.VITE_API_URL}/${images[currentImageIndex]}`} 
                     alt={`Property ${currentImageIndex + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300"
                 />
@@ -97,7 +97,7 @@ function PropertyImageGallery({ images = [] }) {
                             }`}
                         >
                             <img 
-                                src={`http://localhost:4000/${image}`} 
+                                src={`${import.meta.env.VITE_API_URL}/${image}`} 
                                 alt={`Thumbnail ${index + 1}`}
                                 className="w-full h-full object-cover"
                             />
@@ -147,7 +147,7 @@ function PropertyImageGallery({ images = [] }) {
                     {/* Image Container */}
                     <div className="relative w-full h-full flex items-center justify-center p-8">
                         <img 
-                            src={`http://localhost:4000/${images[currentImageIndex]}`} 
+                            src={`${import.meta.env.VITE_API_URL}/${images[currentImageIndex]}`} 
                             alt={`Full screen view ${currentImageIndex + 1}`}
                             className="max-w-full max-h-full object-contain"
                         />
@@ -206,9 +206,8 @@ const PropertyDetails = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/me", {
-          withCredentials: true,
-        });
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, { withCredentials: true });
+
         if (response.data) {
           setUser(response.data.user);
         }
@@ -225,7 +224,7 @@ const PropertyDetails = () => {
     const getProperty = async() => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:4000/api/auth/getProperty/${id}`, { withCredentials: true });
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/getProperty/${id}`, { withCredentials: true });
             if (!response.data.success) {
                 setError(response.data.error || "Failed to fetch property details");
             } else {
@@ -291,7 +290,7 @@ const PropertyDetails = () => {
         };
     
         try {
-            const response = await axios.post('http://localhost:4000/api/user/book-property', bookingDetails, { withCredentials: true });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/book-property`, bookingDetails, { withCredentials: true });
     
             if (response.data.success) {
                 alert(`Booking successful! Total: $${response.data.totalAmount}`);
@@ -324,10 +323,10 @@ const PropertyDetails = () => {
       
         try {
           await axios.post(
-            `http://localhost:4000/api/user/properties/reviews/${id}`,
+            `${import.meta.env.VITE_API_URL}/api/user/properties/reviews/${id}`,
             { rating, comment },
             { withCredentials: true }
-          );
+            );              
       
           window.location.reload(); // Refresh the page to reflect updated data
         } catch (err) {
@@ -345,9 +344,7 @@ const PropertyDetails = () => {
         }
     
         try {
-            const response = await axios.delete(`http://localhost:4000/api/user/properties/bookings/${bookingId}`, {
-                withCredentials: true
-            });
+            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/properties/bookings/${bookingId}`, { withCredentials: true });
     
             if (response.data.success) {
                 toast.success("Booking cancelled successfully.");

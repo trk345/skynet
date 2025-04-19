@@ -12,9 +12,9 @@ export const RequestProvider = ({ children }) => {
     const fetchRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:4000/api/admin/getVendorRequests",
+          `${import.meta.env.VITE_API_URL}/api/admin/getVendorRequests`,
           {
-            withCredentials: true, // Ensures cookies/session are sent if needed
+            withCredentials: true
           }
         );
 

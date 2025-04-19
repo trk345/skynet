@@ -17,8 +17,8 @@ const Navbar = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/me", {
-          withCredentials: true,
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+          withCredentials: true
         });
         if (response.data) {
           setUser(response.data.user);
@@ -54,7 +54,7 @@ const Navbar = () => {
   // Logout function
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:4000/api/auth/logout", {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
       setUser(null);
       setIsLoggedIn(false);
       navigate("/login");

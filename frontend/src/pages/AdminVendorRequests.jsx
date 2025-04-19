@@ -14,9 +14,7 @@ const VendorRequestPage = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/admin/getVendorRequests", {
-          withCredentials: true, // Enable credentials
-        });
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/getVendorRequests`, { withCredentials: true });
         console.log("Fetched vendor requests:", response.data);
   
         setRequests(response.data.data);
@@ -38,9 +36,9 @@ const VendorRequestPage = () => {
   const handleAction = async (requestId, action) => {
     try {
       const response = await axios.put(
-        "http://localhost:4000/api/admin/updateVendorRequest",
+        `${import.meta.env.VITE_API_URL}/api/admin/updateVendorRequest`,
         { requestId, action },
-        { withCredentials: true } // Enable credentials
+        { withCredentials: true }
       );
   
       if (response.status === 200) {

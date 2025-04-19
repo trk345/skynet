@@ -8,9 +8,9 @@ const AuthSuccess = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/auth/me', {
-          credentials: 'include', // Ensures cookies are sent with the request
-        });
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+          credentials: 'include'
+        });        
 
         if (!response.ok) {
           throw new Error('User not authenticated');

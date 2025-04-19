@@ -9,7 +9,10 @@ const Notifications = () => {
   // Fetch unread count
   const fetchUnreadCount = async () => {
     try {
-      const res = await axios.get("/api/user/notifications/unread-count", { withCredentials: true });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/user/notifications/unread-count`,
+        { withCredentials: true }
+      );
       setUnreadCount(res.data.unreadCount);
     } catch (error) {
       console.error("Error fetching unread count", error);
@@ -19,7 +22,10 @@ const Notifications = () => {
   // Fetch all notifications
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("/api/user/notifications", { withCredentials: true });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/user/notifications`,
+        { withCredentials: true }
+      );
       setNotifications(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Error fetching notifications", error);
@@ -30,7 +36,11 @@ const Notifications = () => {
   // Mark notifications as read
   const markAsRead = async () => {
     try {
-      await axios.put("/api/user/notifications/mark-as-read", {}, { withCredentials: true });
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/user/notifications/mark-as-read`,
+        {},
+        { withCredentials: true }
+      );
       setUnreadCount(0);
     } catch (error) {
       console.error("Error marking notifications as read", error);

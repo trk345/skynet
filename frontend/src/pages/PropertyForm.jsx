@@ -49,7 +49,7 @@ const PropertyForm = () => {
       if (isEditMode) {
         const getProperty = async () => {
           try {
-            const response = await axios.get(`http://localhost:4000/api/vendor/getProperty/${id}`, { withCredentials: true});
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor/getProperty/${id}`, { withCredentials: true});
             if (response.data.success) {
               const fetchedProperty = response.data.data;
               fetchedProperty.squareFeet = fetchedProperty.squareFeet == "null" ? "" : fetchedProperty.squareFeet;
@@ -58,7 +58,7 @@ const PropertyForm = () => {
               // Convert stored images into preview format
               const storedImages = Array.isArray(response.data.data.images) // Check if property had images
               ? response.data.data.images.map((image) => ({
-                  preview: `http://localhost:4000/${image}`,
+                  preview: `${import.meta.env.VITE_API_URL}/${image}`,
                   file: image, // No file data for already stored images
                   stored: true, // Mark as existing image from DB
                   })) 
@@ -327,7 +327,7 @@ const PropertyForm = () => {
 
       // Make the API request to upload
       try {
-        const response = await axios.post("http://localhost:4000/api/vendor/create-property", formData, {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/create-property`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -372,7 +372,7 @@ const PropertyForm = () => {
 
       // Make the API request to upload
       try {
-        const response = await axios.put(`http://localhost:4000/api/vendor/update-property/${id}`, formData, {
+        const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/vendor/update-property/${id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

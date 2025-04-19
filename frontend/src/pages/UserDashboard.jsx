@@ -25,7 +25,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/me", {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           withCredentials: true,
         });
         if (response.data) {
@@ -45,9 +45,9 @@ const UserDashboard = () => {
     const fetchVendorProperties = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get("http://localhost:4000/api/vendor/getProperties", 
-          { withCredentials: true }
-        );
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/vendor/getProperties`, {
+          withCredentials: true,
+        });
         
         if (response.data.success) {
           console.log("Fetched Vendor Properties:", response.data.data);
@@ -95,9 +95,9 @@ const UserDashboard = () => {
   const handleDeleteProperty = async (id) => {
     if (window.confirm("Are you sure you want to delete this property?")) {
       try {
-        const response = await axios.delete(`http://localhost:4000/api/vendor/deleteProperty/${id}`, 
-          { withCredentials: true }
-        );
+        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/vendor/deleteProperty/${id}`, {
+          withCredentials: true,
+        });
         
         if (response.data.success) {
           setProperties(prev => prev.filter(property => property._id !== id));
@@ -219,8 +219,10 @@ const UserDashboard = () => {
     const fetchBookings = async () => {
       setIsLoadingBookings(true);
       try {
-        const response = await axios.get("http://localhost:4000/api/user/getBookings", { withCredentials: true });
-        
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/getBookings`, {
+          withCredentials: true,
+        });
+
         if (response.data.success) {
           setBookings(response.data.data);
         } else {
@@ -245,8 +247,8 @@ const UserDashboard = () => {
     }
 
     try {
-        const response = await axios.delete(`http://localhost:4000/api/user/properties/bookings/${bookingId}`, {
-            withCredentials: true
+        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/properties/bookings/${bookingId}`, {
+          withCredentials: true,
         });
 
         if (response.data.success) {
@@ -433,7 +435,7 @@ const UserDashboard = () => {
                     <div className="bg-gray-100 h-48 flex items-center justify-center">
                       {property.images ? (
                         <img 
-                          src={`http://localhost:4000/${property.images[0]}`} 
+                          src={`${import.meta.env.VITE_API_URL}/${property.images[0]}`}
                           alt={property.name}
                           className="w-full h-full object-cover" 
                         />
@@ -574,7 +576,7 @@ const UserDashboard = () => {
                   <div className="bg-gray-100 h-48 flex items-center justify-center">
                     {booking.propertyId.images ? (
                       <img 
-                        src={`http://localhost:4000/${booking.propertyId.images[0]}`} 
+                      src={`${import.meta.env.VITE_API_URL}/${booking.propertyId.images[0]}`}
                         alt={booking.propertyId.name}
                         className="w-full h-full object-cover" 
                       />

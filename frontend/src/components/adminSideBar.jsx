@@ -17,7 +17,7 @@ const AdminSideBar = () => {
     // Logout function
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:4000/api/auth/logout", {}, { withCredentials: true });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);

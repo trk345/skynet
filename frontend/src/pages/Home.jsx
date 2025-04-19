@@ -107,7 +107,7 @@ const Home = () => {
   const handleSearch = async () => {
     try {
       // Send the search parameters to the backend
-      const response = await axios.get("http://localhost:4000/api/auth/getProperties", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/getProperties`, {
         withCredentials: true,
         params: { ...searchParams } // send all search params
       });
@@ -127,7 +127,7 @@ const Home = () => {
   useEffect(() => {
     const getProperties = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/getProperties", { 
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/getProperties`, {
           withCredentials: true,
           params: { ...searchParams } // Send the current search params on load
         });
@@ -324,7 +324,7 @@ const Home = () => {
                         <div className="flex items-center space-x-0.5 opacity-70">
                           {(() => {
                             const activeAmenities = Object.entries(property.amenities)
-                              .filter(([isAvailable]) => isAvailable)
+                              .filter(([, isAvailable]) => isAvailable)
                               .slice(0, 2)
                               .map(([amenity]) => amenity);
 

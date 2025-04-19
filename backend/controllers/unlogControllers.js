@@ -197,70 +197,73 @@ const getProperties = async (req, res) => {
   try {
     const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
 
-        // Sanitize and validate user inputs
-        const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
-        if (type) {
-          if (!validTypes.includes(type)) {
-            return res.status(400).json({ success: false, error: "Invalid type" });
-          }
-        }
-    
-        if (location && typeof location !== 'string') {
-          return res.status(400).json({ success: false, error: "Invalid location format" });
-        }
-    
-        if (price && isNaN(parseFloat(price))) {
-          return res.status(400).json({ success: false, error: "Invalid price format" });
-        }
-    
-        if (maxGuests && isNaN(parseInt(maxGuests))) {
-          return res.status(400).json({ success: false, error: "Invalid guests format" });
-        }
-    
-        if (checkIn && isNaN(Date.parse(checkIn))) {
-          return res.status(400).json({ success: false, error: "Invalid check-in date format" });
-        }
-    
-        if (checkOut && isNaN(Date.parse(checkOut))) {
-          return res.status(400).json({ success: false, error: "Invalid check-out date format" });
-        }
-    
-        if (averageRating && isNaN(parseFloat(averageRating))) {
-          return res.status(400).json({ success: false, error: "Invalid average rating format" });
-        }    
+    // Step 1: Validate & sanitize query inputs (user-controlled)
+    const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
+    const safeFilters = {};
 
-    const filters = {};
-
-    if (type) filters.type = type;
-
-    if (location) {
-      filters.location = { $regex: location, $options: 'i' }; // case-insensitive substring match
+    if (type) {
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({ success: false, error: "Invalid type" });
+      }
+      safeFilters.type = type;
     }
 
-    if (price) filters.price = { $lte: parseFloat(price) };
+    if (location) {
+      if (typeof location !== 'string') {
+        return res.status(400).json({ success: false, error: "Invalid location format" });
+      }
+      safeFilters.location = { $regex: location, $options: 'i' };
+    }
 
-    if (maxGuests) filters.maxGuests = { $lte: parseInt(maxGuests) }; // max number of guests
+    if (price) {
+      const parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice)) {
+        return res.status(400).json({ success: false, error: "Invalid price format" });
+      }
+      safeFilters.price = { $lte: parsedPrice };
+    }
+
+    if (maxGuests) {
+      const parsedGuests = parseInt(maxGuests);
+      if (isNaN(parsedGuests)) {
+        return res.status(400).json({ success: false, error: "Invalid guests format" });
+      }
+      safeFilters.maxGuests = { $lte: parsedGuests };
+    }
 
     if (checkIn && checkOut) {
-      filters.bookedDates = {
+      const parsedCheckIn = Date.parse(checkIn);
+      const parsedCheckOut = Date.parse(checkOut);
+
+      if (isNaN(parsedCheckIn) || isNaN(parsedCheckOut)) {
+        return res.status(400).json({ success: false, error: "Invalid date format" });
+      }
+
+      safeFilters.bookedDates = {
         $not: {
           $elemMatch: {
-            checkIn: { $lt: new Date(checkOut) },
-            checkOut: { $gt: new Date(checkIn) }
+            checkIn: { $lt: new Date(parsedCheckOut) },
+            checkOut: { $gt: new Date(parsedCheckIn) }
           }
         }
       };
     }
-    
 
-    if (averageRating) filters.averageRating = { $gte: parseFloat(averageRating) };
+    if (averageRating) {
+      const parsedRating = parseFloat(averageRating);
+      if (isNaN(parsedRating)) {
+        return res.status(400).json({ success: false, error: "Invalid average rating format" });
+      }
+      safeFilters.averageRating = { $gte: parsedRating };
+    }
 
     // Exclude properties owned by the current user
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
-      filters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
+      safeFilters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
     }
 
-    const properties = await Property.find(filters);
+    // Step 2: Execute query with pre-validated filters
+    const properties = await Property.find(safeFilters);
 
     res.status(200).json({ success: true, data: properties });
   } catch (error) {
@@ -268,6 +271,7 @@ const getProperties = async (req, res) => {
     res.status(500).json({ success: false, error: "Could not fetch properties" });
   }
 };
+
 
 
 // Fetch a single Property

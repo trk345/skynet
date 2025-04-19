@@ -27,7 +27,9 @@ const postVendorRequest = async (req, res) => {
     
     try {
         const userId = verifyUser(req, res);
-        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         const requesterID = userId;
         const { firstName, lastName, email, mobile, message } = req.body;
   
@@ -85,7 +87,9 @@ const getUnreadNotifCount = async (req, res) => {
 const getNotifs = async (req, res) => {
     try {
       const userId = verifyUser(req, res);
-      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
   
       const user = await User.findById(userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
@@ -104,7 +108,9 @@ const getNotifs = async (req, res) => {
 const putReadNotifs = async (req, res) => {
     try {
         const userId = verifyUser(req, res);
-        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -121,7 +127,9 @@ const putReadNotifs = async (req, res) => {
 // Route to handle booking
 const bookProperty = async (req, res) => {
     const userId = verifyUser(req, res);
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -250,7 +258,9 @@ const bookProperty = async (req, res) => {
 
 const postReview = async (req, res) => {
     const userId = verifyUser(req, res);
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
   
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -298,7 +308,9 @@ const postReview = async (req, res) => {
 
 const deleteBooking = async (req, res) => {
     const userId = verifyUser(req, res);
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const bookingId = req.params.id;
 
@@ -360,7 +372,9 @@ const deleteBooking = async (req, res) => {
 const getBookings = async (req, res) => {
     try {
         const userId = verifyUser(req, res);
-        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         const bookings = await Booking.find({ userId: userId }).populate("propertyId");
         if (!bookings) return res.status(404).json({ message: "No bookings found" });
         res.status(200).json({ success: true, data: bookings});

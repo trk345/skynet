@@ -14,7 +14,7 @@ dist-ssr
 
 # Ignore environment variables
 .env
-.env.*           
+.env.*
 # This will ignore .env.development, .env.production, etc.
 
 # Editor directories and files

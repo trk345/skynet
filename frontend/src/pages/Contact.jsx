@@ -41,7 +41,7 @@ const Contact = () => {
   
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/user/postVendorRequest",
+        `${import.meta.env.VITE_API_URL}/api/user/postVendorRequest`,
         payload,
         { withCredentials: true }
       );
