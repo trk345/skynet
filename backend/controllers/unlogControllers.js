@@ -193,98 +193,91 @@ const logout = (req, res) => {
 
 
 
+// Utility function to sanitize and validate input
+const sanitizeAndValidate = (value, type) => {
+  if (type === 'string') {
+    return value ? value.trim() : '';
+  }
+  if (type === 'number') {
+    const parsedValue = parseFloat(value);
+    return isNaN(parsedValue) ? null : parsedValue;
+  }
+  if (type === 'date') {
+    const parsedDate = moment(value, 'YYYY-MM-DD', true);
+    return parsedDate.isValid() ? parsedDate.toDate() : null;
+  }
+  return value;
+};
+
+// Controller function for searching properties
 const getProperties = async (req, res) => {
-  const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
-
   try {
-    const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
+    const {
+      type,
+      location,
+      price,
+      maxGuests,
+      checkIn,
+      checkOut,
+      averageRating,
+    } = req.query;
 
-    // Step 1: Validate & sanitize query inputs (user-controlled)
-    const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
-    const safeFilters = {};
+    // Ensure only allowed search parameters are used
+    const allowedFields = ['type', 'location', 'price', 'maxGuests', 'checkIn', 'checkOut', 'averageRating'];
 
-    // Validate and sanitize 'type'
-    if (type) {
-      if (!validTypes.includes(type)) {
-        return res.status(400).json({ success: false, error: "Invalid type" });
+    // Build the query object for MongoDB
+    let query = {};
+
+    // Sanitize and validate inputs
+    if (type && allowedFields.includes('type')) query.type = sanitizeAndValidate(type, 'string');
+    if (location && allowedFields.includes('location')) query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' }; // Case-insensitive search for location
+    if (price && allowedFields.includes('price')) query.price = { $lte: sanitizeAndValidate(price, 'number') }; // Filter properties with price less than or equal to 'price'
+    if (maxGuests && allowedFields.includes('maxGuests')) query.maxGuests = { $gte: sanitizeAndValidate(maxGuests, 'number') }; // Filter properties with maxGuests greater than or equal to 'maxGuests'
+    if (averageRating && allowedFields.includes('averageRating')) query.averageRating = { $gte: sanitizeAndValidate(averageRating, 'number') }; // Filter properties with averageRating greater than or equal to 'averageRating'
+
+    // Check if check-in and check-out dates are provided
+    if (checkIn && checkOut && allowedFields.includes('checkIn') && allowedFields.includes('checkOut')) {
+      const checkInDate = sanitizeAndValidate(checkIn, 'date');
+      const checkOutDate = sanitizeAndValidate(checkOut, 'date');
+
+      if (checkInDate && checkOutDate) {
+        // Filter properties based on the availability and booked dates
+        query.$or = [
+          {
+            'availability.startDate': { $gte: checkOutDate },
+            'availability.endDate': { $lte: checkInDate },
+          },
+          {
+            'bookedDates': {
+              $not: {
+                $elemMatch: {
+                  checkIn: { $gte: checkInDate },
+                  checkOut: { $lte: checkOutDate },
+                },
+              },
+            },
+          },
+        ];
       }
-      safeFilters.type = type; // Direct assignment after validation
     }
 
-    // Validate and sanitize 'location' (remove potentially malicious characters)
-    if (location) {
-      if (typeof location !== 'string' || location.trim().length === 0) {
-        return res.status(400).json({ success: false, error: "Invalid location format" });
-      }
-      // Sanitize the location by trimming and removing non-alphanumeric characters
-      safeFilters.location = { $regex: location.trim(), $options: 'i' };  // Case-insensitive direct match
-    }
+    // Query the database
+    const properties = await Property.find(query).exec();
 
-    // Validate and sanitize 'price'
-    if (price) {
-      const parsedPrice = parseFloat(price);
-      if (isNaN(parsedPrice) || parsedPrice < 0) {
-        return res.status(400).json({ success: false, error: "Invalid price format" });
-      }
-      safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
-    }
-
-    // Validate and sanitize 'maxGuests'
-    if (maxGuests) {
-      const parsedGuests = parseInt(maxGuests);
-      if (isNaN(parsedGuests) || parsedGuests < 1) {
-        return res.status(400).json({ success: false, error: "Invalid guests format" });
-      }
-      safeFilters.maxGuests = { $lte: parsedGuests };  // Assuming max guests filter
-    }
-
-    // Validate and sanitize 'checkIn' and 'checkOut' dates
-    if (checkIn && checkOut) {
-      const parsedCheckIn = Date.parse(checkIn);
-      const parsedCheckOut = Date.parse(checkOut);
-
-      if (isNaN(parsedCheckIn) || isNaN(parsedCheckOut)) {
-        return res.status(400).json({ success: false, error: "Invalid date format" });
-      }
-
-      safeFilters.bookedDates = {
-        $not: {
-          $elemMatch: {
-            checkIn: { $lt: new Date(parsedCheckOut) },
-            checkOut: { $gt: new Date(parsedCheckIn) }
-          }
-        }
-      };
-    }
-
-    // Validate and sanitize 'averageRating'
-    if (averageRating) {
-      const parsedRating = parseFloat(averageRating);
-      if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
-        return res.status(400).json({ success: false, error: "Invalid average rating format" });
-      }
-      safeFilters.averageRating = { $gte: parsedRating };  // Assuming minimum rating filter
-    }
-
-    // Exclude properties owned by the current user (ensure userId is valid)
-    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
-      safeFilters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
-    }
-
-    // Step 2: Execute query with pre-validated filters
-    const properties = await Property.find(safeFilters);
-
-    // Step 3: Return properties or handle case where no properties match
-    if (properties.length === 0) {
-      return res.status(404).json({ success: false, error: "No properties found" });
-    }
-    
-    res.status(200).json({ success: true, data: properties });
+    // Send response with the found properties
+    res.json({
+      success: true,
+      data: properties,
+    });
   } catch (error) {
     console.error('Error fetching properties:', error);
-    res.status(500).json({ success: false, error: "Could not fetch properties" });
+    res.status(500).json({
+      success: false,
+      error: 'An error occurred while fetching properties.',
+    });
   }
 };
+
 
 
 
