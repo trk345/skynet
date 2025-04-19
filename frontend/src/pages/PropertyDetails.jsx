@@ -40,7 +40,7 @@ function PropertyImageGallery({ images = [] }) {
                 {/* Main Image */}
                 <img 
                     src={`http://localhost:4000/${images[currentImageIndex]}`} 
-                    alt={`Property image ${currentImageIndex + 1}`}
+                    alt={`Property ${currentImageIndex + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300"
                 />
 
@@ -148,7 +148,7 @@ function PropertyImageGallery({ images = [] }) {
                     <div className="relative w-full h-full flex items-center justify-center p-8">
                         <img 
                             src={`http://localhost:4000/${images[currentImageIndex]}`} 
-                            alt={`Full screen image ${currentImageIndex + 1}`}
+                            alt={`Full screen view ${currentImageIndex + 1}`}
                             className="max-w-full max-h-full object-contain"
                         />
                     </div>

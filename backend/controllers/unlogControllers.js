@@ -256,8 +256,8 @@ const getProperties = async (req, res) => {
     if (averageRating) filters.averageRating = { $gte: parseFloat(averageRating) };
 
     // Exclude properties owned by the current user
-    if (userId) {
-      filters.userID = { $ne: userId };
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      filters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
     }
 
     const properties = await Property.find(filters);

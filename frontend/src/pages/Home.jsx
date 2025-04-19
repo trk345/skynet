@@ -40,8 +40,8 @@ const PropertyImageGallery = ({ images = [] }) => {
     <div className="relative h-56 w-full overflow-hidden">
       {/* Main Image */}
       <img 
-        src={`http://localhost:4000/${images[currentImageIndex]}`} 
-        alt={`Property image ${currentImageIndex + 1}`}
+        src={`${import.meta.env.VITE_API_URL}/${images[currentImageIndex]}`}
+        alt={`Property ${currentImageIndex + 1}`}
         className="w-full h-full object-cover absolute top-0 left-0"
       />
 
@@ -50,7 +50,7 @@ const PropertyImageGallery = ({ images = [] }) => {
         <>
           {/* Previous Button */}
           {currentImageIndex > 0 && (
-          <button
+          <button type="button"
             onClick={handlePrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 
               bg-white/50 hover:bg-white/70 rounded-full p-1 
@@ -62,7 +62,7 @@ const PropertyImageGallery = ({ images = [] }) => {
 
           {/* Next Button */}
           {currentImageIndex < images.length -1 && (
-          <button
+          <button type="button"
             onClick={handleNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 
               bg-white/50 hover:bg-white/70 rounded-full p-1 
@@ -233,7 +233,7 @@ const Home = () => {
           </div>
 
           {/* Search Button */}
-          <button 
+          <button type="button"
             onClick={handleSearch}
             className="mt-4 w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
           >
