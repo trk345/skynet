@@ -193,88 +193,83 @@ const logout = (req, res) => {
 
 
 
-// Utility function to sanitize and validate input
+
+const allowedTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
+
 const sanitizeAndValidate = (value, type) => {
   if (type === 'string') {
-    return value ? value.trim() : '';
+    return typeof value === 'string' ? value.trim() : '';
   }
   if (type === 'number') {
     const parsedValue = parseFloat(value);
     return isNaN(parsedValue) ? null : parsedValue;
   }
   if (type === 'date') {
-    const parsedDate = moment(value, 'YYYY-MM-DD', true);
-    return parsedDate.isValid() ? parsedDate.toDate() : null;
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
-  return value;
+  return null;
 };
 
-// Controller function for searching properties
 const getProperties = async (req, res) => {
   try {
-    const {
-      type,
-      location,
-      price,
-      maxGuests,
-      checkIn,
-      checkOut,
-      averageRating,
-    } = req.query;
+    const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
 
-    // Ensure only allowed search parameters are used
-    const allowedFields = ['type', 'location', 'price', 'maxGuests', 'checkIn', 'checkOut', 'averageRating'];
+    const query = {};
 
-    // Build the query object for MongoDB
-    let query = {};
+    // Validate and sanitize input
+    if (type && allowedTypes.includes(type)) {
+      query.type = type;
+    }
 
-    // Sanitize and validate inputs
-    if (type && allowedFields.includes('type')) query.type = sanitizeAndValidate(type, 'string');
-    if (location && allowedFields.includes('location')) query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' }; // Case-insensitive search for location
-    if (price && allowedFields.includes('price')) query.price = { $lte: sanitizeAndValidate(price, 'number') }; // Filter properties with price less than or equal to 'price'
-    if (maxGuests && allowedFields.includes('maxGuests')) query.maxGuests = { $gte: sanitizeAndValidate(maxGuests, 'number') }; // Filter properties with maxGuests greater than or equal to 'maxGuests'
-    if (averageRating && allowedFields.includes('averageRating')) query.averageRating = { $gte: sanitizeAndValidate(averageRating, 'number') }; // Filter properties with averageRating greater than or equal to 'averageRating'
+    if (location && typeof location === 'string') {
+      query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' };
+    }
 
-    // Check if check-in and check-out dates are provided
-    if (checkIn && checkOut && allowedFields.includes('checkIn') && allowedFields.includes('checkOut')) {
-      const checkInDate = sanitizeAndValidate(checkIn, 'date');
-      const checkOutDate = sanitizeAndValidate(checkOut, 'date');
+    if (price) {
+      const maxPrice = sanitizeAndValidate(price, 'number');
+      if (maxPrice !== null) query.price = { $lte: maxPrice };
+    }
 
-      if (checkInDate && checkOutDate) {
-        // Filter properties based on the availability and booked dates
-        query.$or = [
-          {
-            'availability.startDate': { $gte: checkOutDate },
-            'availability.endDate': { $lte: checkInDate },
-          },
-          {
-            'bookedDates': {
-              $not: {
-                $elemMatch: {
-                  checkIn: { $gte: checkInDate },
-                  checkOut: { $lte: checkOutDate },
-                },
-              },
-            },
-          },
-        ];
+    if (maxGuests) {
+      const guests = sanitizeAndValidate(maxGuests, 'number');
+      if (guests !== null) query.maxGuests = { $gte: guests };
+    }
+
+    if (averageRating) {
+      const rating = sanitizeAndValidate(averageRating, 'number');
+      if (rating !== null) query.averageRating = { $gte: rating };
+    }
+
+    if (checkIn && checkOut) {
+      const inDate = sanitizeAndValidate(checkIn, 'date');
+      const outDate = sanitizeAndValidate(checkOut, 'date');
+
+      if (inDate && outDate && outDate > inDate) {
+        query.bookedDates = {
+          $not: {
+            $elemMatch: {
+              $or: [
+                {
+                  checkIn: { $lt: outDate },
+                  checkOut: { $gt: inDate }
+                }
+              ]
+            }
+          }
+        };
       }
     }
 
-    // Query the database
     const properties = await Property.find(query).exec();
 
-    // Send response with the found properties
     res.json({
       success: true,
       data: properties,
     });
   } catch (error) {
     console.error('Error fetching properties:', error);
-    res.status(500).json({
-      success: false,
-      error: 'An error occurred while fetching properties.',
-    });
+    res.status(500).json({ success: false, error: 'Server Error' });
   }
 };
 
