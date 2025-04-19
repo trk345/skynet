@@ -218,8 +218,11 @@ const getProperties = async (req, res) => {
     const query = {};
 
     // Validate and sanitize input
-    if (type && allowedTypes.includes(type)) {
-      query.type = type;
+    if (type) {
+      const sanitizedType = sanitizeAndValidate(type, 'string');
+      if (sanitizedType && allowedTypes.includes(sanitizedType)) {
+        query.type = sanitizedType;
+      }
     }
 
     if (location && typeof location === 'string') {
