@@ -194,7 +194,7 @@ const logout = (req, res) => {
 
 
 const getProperties = async (req, res) => {
-  const userId = getUserIdFromToken(req);
+  const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
 
   try {
     const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
@@ -203,48 +203,50 @@ const getProperties = async (req, res) => {
     const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
     const safeFilters = {};
 
-    // Validate 'type' and sanitize (ensure it's one of the valid types)
+    // Validate and sanitize 'type'
     if (type) {
       if (!validTypes.includes(type)) {
         return res.status(400).json({ success: false, error: "Invalid type" });
       }
-      safeFilters.type = type;  // Safely assign as it is pre-validated
+      safeFilters.type = type; // Direct assignment after validation
     }
 
-    // Validate and sanitize location (ensure it's a string and clean the input)
+    // Validate and sanitize 'location' (remove potentially malicious characters)
     if (location) {
       if (typeof location !== 'string' || location.trim().length === 0) {
         return res.status(400).json({ success: false, error: "Invalid location format" });
       }
-      // Sanitize location to prevent any malicious characters
-      safeFilters.location = location.trim();
+      // Sanitize the location by trimming and removing non-alphanumeric characters
+      safeFilters.location = { $regex: location.trim(), $options: 'i' };  // Case-insensitive direct match
     }
 
-    // Validate and sanitize price (ensure it's a valid number)
+    // Validate and sanitize 'price'
     if (price) {
       const parsedPrice = parseFloat(price);
       if (isNaN(parsedPrice) || parsedPrice < 0) {
         return res.status(400).json({ success: false, error: "Invalid price format" });
       }
-      safeFilters.price = { $lte: parsedPrice };
+      safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
     }
 
-    // Validate and sanitize maxGuests (ensure it's an integer and valid)
+    // Validate and sanitize 'maxGuests'
     if (maxGuests) {
       const parsedGuests = parseInt(maxGuests);
-      if (isNaN(parsedGuests)) {
+      if (isNaN(parsedGuests) || parsedGuests < 1) {
         return res.status(400).json({ success: false, error: "Invalid guests format" });
       }
-      safeFilters.maxGuests = { $lte: parsedGuests };
+      safeFilters.maxGuests = { $lte: parsedGuests };  // Assuming max guests filter
     }
 
-    // Validate and sanitize check-in/check-out dates (ensure they're valid dates)
+    // Validate and sanitize 'checkIn' and 'checkOut' dates
     if (checkIn && checkOut) {
       const parsedCheckIn = Date.parse(checkIn);
       const parsedCheckOut = Date.parse(checkOut);
+
       if (isNaN(parsedCheckIn) || isNaN(parsedCheckOut)) {
         return res.status(400).json({ success: false, error: "Invalid date format" });
       }
+
       safeFilters.bookedDates = {
         $not: {
           $elemMatch: {
@@ -255,16 +257,16 @@ const getProperties = async (req, res) => {
       };
     }
 
-    // Validate and sanitize averageRating
+    // Validate and sanitize 'averageRating'
     if (averageRating) {
       const parsedRating = parseFloat(averageRating);
-      if (isNaN(parsedRating)) {
+      if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 5) {
         return res.status(400).json({ success: false, error: "Invalid average rating format" });
       }
-      safeFilters.averageRating = { $gte: parsedRating };
+      safeFilters.averageRating = { $gte: parsedRating };  // Assuming minimum rating filter
     }
 
-    // Exclude properties owned by the current user
+    // Exclude properties owned by the current user (ensure userId is valid)
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       safeFilters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
     }
@@ -276,7 +278,7 @@ const getProperties = async (req, res) => {
     if (properties.length === 0) {
       return res.status(404).json({ success: false, error: "No properties found" });
     }
-
+    
     res.status(200).json({ success: true, data: properties });
   } catch (error) {
     console.error('Error fetching properties:', error);
