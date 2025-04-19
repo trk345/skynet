@@ -10,11 +10,19 @@ const notificationSchema = new Schema({
     trim: true,
     maxlength: [500, 'Notification message too long']
   },
+  type: {
+    type: String,
+    enum: ['booking', 'cancellation', 'review', 'adminMessage', 'info'], // Add more as needed
+    default: 'info'
+  },
   read: { 
     type: Boolean, 
     default: false 
   }
+}, {
+  timestamps: { createdAt: true, updatedAt: false }
 });
+
 
 const userSchema = new Schema({
   username: { type: String, required: true, trim: true },
@@ -25,8 +33,8 @@ const userSchema = new Schema({
     lowercase: true,
     trim: true,
     index: true, 
-    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/, 'Please enter a valid email']
-  },
+    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/, 'Please enter a valid email']
+  },  
   
   password: { 
     type: String,
@@ -58,6 +66,25 @@ const userSchema = new Schema({
     validate: [arrayLimit, '{PATH} exceeds the limit of 50']
   },
   approvedVendors: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+
+  properties: [{
+    type: Schema.Types.ObjectId, 
+    ref: 'Property'
+  }],
+  reviewsGiven: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+    rating: { type: Number, min: 1, max: 5 },
+    comment: { type: String, trim: true, maxlength: 500 },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  bookings: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+    startdate: { type: Date, required: true },
+    enddate: { type: Date, required: true },
+  }],
+  favorites: [{
+    property: { type: Schema.Types.ObjectId, ref: 'Property' },
+  }],
 
 }, { timestamps: true });
 

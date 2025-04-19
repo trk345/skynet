@@ -8,6 +8,8 @@ const {
     authMe,
     logout,
     // resetPassword,
+    getProperties,
+    getProperty,
 } = require('../controllers/unlogControllers');
 const router = express.Router();
 
@@ -30,6 +32,13 @@ const signupLimiter = rateLimit({
     message: { message: 'Too many signup attempts. Try again later.' },
     headers: true,
 });
+
+// Define rate limiter
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+  });
 
 // Middleware to check authentication
 const authenticateUser = (req, res, next) => {
@@ -54,6 +63,10 @@ const authenticateUser = (req, res, next) => {
 
 router.get('/me', [loginLimiter, authenticateUser], authMe);
 
+// Get all properties
+router.get("/getProperties", getProperties)
+// Get a single property
+router.get("/getProperty/:id", getProperty)
 
 // Logout Route (Clears JWT Cookie)
 router.post('/logout', logout);

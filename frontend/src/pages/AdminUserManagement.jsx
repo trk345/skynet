@@ -10,7 +10,7 @@ const UserManagementPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/admin/getUsers", { withCredentials: true });
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/getUsers`, { withCredentials: true });
         if (response.data.success) {
           setUsers(response.data.data); // Access users inside 'data' key
         } else {

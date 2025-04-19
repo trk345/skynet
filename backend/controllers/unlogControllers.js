@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User } = require('../models/userSchemas');
+const { Property } = require('../models/propertySchemas');
 const mongoose = require('mongoose');
 const validator = require("validator");
 
 function createJWT(user) {
   const payload = {
-    userId: user.id,
+    userId: user._id,
     username: user.username,
     email: user.email,
     role: user.role,
@@ -14,6 +15,18 @@ function createJWT(user) {
 
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 }
+
+const getUserIdFromToken = (req) => {
+  const token = req.cookies.token;
+  if (!token) return null;
+
+  try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      return decoded.userId;
+  } catch {
+      return null;
+  }
+};
 
 // Login Controller
 const login = async (req, res) => {
@@ -178,4 +191,108 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logout successful" });
 };
 
-module.exports = { login, signup, adminLogin, authMe, logout };
+
+
+
+const allowedTypes = ['Standard Room', 'Luxury Room', 'Business Suite', 'Apartment', 'Villa'];
+
+const sanitizeAndValidate = (value, type) => {
+  if (type === 'string') {
+    return typeof value === 'string' ? value.trim() : '';
+  }
+  if (type === 'number') {
+    const parsedValue = parseFloat(value);
+    return isNaN(parsedValue) ? null : parsedValue;
+  }
+  if (type === 'date') {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+};
+
+const getProperties = async (req, res) => {
+  try {
+    const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
+
+    const query = {};
+
+    // Exclude properties owned by the logged-in user
+    const userId = getUserIdFromToken(req);
+    if (userId) {
+      query.userID = { $ne: userId };
+    }
+
+    // Validate and sanitize input
+    if (type) {
+      const sanitizedType = sanitizeAndValidate(type, 'string');
+      if (sanitizedType && allowedTypes.includes(sanitizedType)) {
+        query.type = sanitizedType;
+      }
+    }
+
+    if (location && typeof location === 'string') {
+      query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' };
+    }
+
+    if (price) {
+      const maxPrice = sanitizeAndValidate(price, 'number');
+      if (maxPrice !== null) query.price = { $lte: maxPrice };
+    }
+
+    if (maxGuests) {
+      const guests = sanitizeAndValidate(maxGuests, 'number');
+      if (guests !== null) query.maxGuests = { $gte: guests };
+    }
+
+    if (averageRating) {
+      const rating = sanitizeAndValidate(averageRating, 'number');
+      if (rating !== null) query.averageRating = { $gte: rating };
+    }
+
+    if (checkIn && checkOut) {
+      const inDate = sanitizeAndValidate(checkIn, 'date');
+      const outDate = sanitizeAndValidate(checkOut, 'date');
+
+      if (inDate && outDate && outDate > inDate) {
+        query.bookedDates = {
+          $not: {
+            $elemMatch: {
+              $or: [
+                {
+                  checkIn: { $lt: outDate },
+                  checkOut: { $gt: inDate }
+                }
+              ]
+            }
+          }
+        };
+      }
+    }
+
+    const properties = await Property.find(query).exec();
+
+    res.json({
+      success: true,
+      data: properties,
+    });
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    res.status(500).json({ success: false, error: 'Server Error' });
+  }
+};
+
+
+
+
+// Fetch a single Property
+const getProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    res.status(200).json({ success: true, data: property });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Could not fetch the property in server" })
+  }
+}
+
+module.exports = { login, signup, adminLogin, authMe, logout, getProperties, getProperty };

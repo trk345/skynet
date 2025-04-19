@@ -19,6 +19,7 @@ const rateLimit = require("express-rate-limit");
 const unlogRoutes = require('./routes/unlogRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
+const vendorRoutes = require('./routes/vendorRoutes');
 const { User } = require('./models/userSchemas');
 
 // Express app
@@ -28,6 +29,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser()); // Parse cookies
 app.use(morgan('dev'));
+app.use('/uploads', express.static('uploads')); // Serve static files
 
 // CORS Middleware (Allow frontend at port 5173)
 app.use(cors({
@@ -67,7 +69,7 @@ const limiter = rateLimit({
 // JWT Token generation
 function createJWT(user) {
   const payload = {
-    userId: user.id,
+    userId: user._id,
     username: user.username,
     email: user.email,
     role: user.role
@@ -92,7 +94,7 @@ passport.use(new GoogleStrategy(
           username: profile.displayName,
           email: profile.emails[0].value,
           lastLogin: new Date(),
-          role: 'User',
+          role: 'user',
           notifications: [],
           approvedVendors: [],
         });
@@ -106,16 +108,18 @@ passport.use(new GoogleStrategy(
 ));
 
 // Serialize and deserialize the user
-passport.serializeUser((user, done) => done(null, user.id));
+passport.serializeUser((user, done) => done(null, user.googleId));  // Serialize using googleId
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (googleId, done) => {  // Deserialize using googleId
   try {
-    const user = await User.findById(id);
+    const user = await User.findOne({ googleId });  // Find user by googleId
     done(null, user);
   } catch (err) {
     done(err, null);
   }
 });
+
+
 // Google OAuth Routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -171,7 +175,7 @@ function authenticateJWT(req, res, next) {
 // Define rate limiting globally
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    max: 150, // Limit each IP to 100 requests per window
     message: 'Too many requests from this IP, please try again later.',
     headers: true,
 });
@@ -183,6 +187,7 @@ app.use(globalLimiter);
 app.use('/api/auth', unlogRoutes);
 app.use('/api/admin', authenticateJWT, adminRoutes); // Protected
 app.use('/api/user', authenticateJWT, userRoutes);  // Protected
+app.use('/api/vendor', authenticateJWT, vendorRoutes); // Protected
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
@@ -208,26 +213,3 @@ mongoose.connect(process.env.MONGO_URI)
     console.log(err);
   });
 
-// STATIC FILES FOR IMAGE UPLOADS
-// app.use(morgan('dev'));
-// app.use(express.urlencoded({ extended:true }));
-// app.use(express.static('public'));
-// app.use('/uploads', express.static('uploads'));
-
-
-// // Define error handling middleware
-// function sessionLogout(err, req, res, next) {
-//   if (err.message && err.message.includes("Cannot read properties of undefined (reading 'username')")) {
-//       // Redirect to the login page
-//       return res.redirect('/login');
-//   }
-
-//   // For other errors, proceed to the next middleware
-//   next(err);
-// }
-
-// app.use(sessionLogout);
-
-// app.use((req, res)=>{
-//     res.status(404).render('404', { title:"404" });
-// });
