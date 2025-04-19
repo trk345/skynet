@@ -194,7 +194,7 @@ const logout = (req, res) => {
 
 
 const getProperties = async (req, res) => {
-  const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
+  const userId = getUserIdFromToken(req);
 
   try {
     const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
@@ -203,7 +203,7 @@ const getProperties = async (req, res) => {
     const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
     const safeFilters = {};
 
-    // Validate and sanitize type
+    // Validate and sanitize 'type'
     if (type) {
       if (!validTypes.includes(type)) {
         return res.status(400).json({ success: false, error: "Invalid type" });
@@ -216,7 +216,7 @@ const getProperties = async (req, res) => {
       if (typeof location !== 'string' || location.trim().length === 0) {
         return res.status(400).json({ success: false, error: "Invalid location format" });
       }
-      safeFilters.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') }; // Case-insensitive regex
+      safeFilters.location = location.trim();  // Direct match instead of regex
     }
 
     // Validate and sanitize price (must be a number and a valid format)
@@ -228,30 +228,22 @@ const getProperties = async (req, res) => {
       safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
     }
 
-    // Validate and sanitize maxGuests (must be an integer)
+    // Validate and sanitize maxGuests (must be an integer and a valid format)
     if (maxGuests) {
       const parsedGuests = parseInt(maxGuests);
-      if (isNaN(parsedGuests) || parsedGuests < 1) {
+      if (isNaN(parsedGuests)) {
         return res.status(400).json({ success: false, error: "Invalid guests format" });
       }
       safeFilters.maxGuests = { $lte: parsedGuests };
     }
 
-    // Validate and sanitize dates (checkIn, checkOut)
+    // Validate and sanitize check-in/check-out dates
     if (checkIn && checkOut) {
       const parsedCheckIn = Date.parse(checkIn);
       const parsedCheckOut = Date.parse(checkOut);
-
       if (isNaN(parsedCheckIn) || isNaN(parsedCheckOut)) {
         return res.status(400).json({ success: false, error: "Invalid date format" });
       }
-
-      // Ensure checkOut is after checkIn
-      if (parsedCheckOut <= parsedCheckIn) {
-        return res.status(400).json({ success: false, error: "Check-out date must be after check-in date" });
-      }
-
-      // Filter out properties with overlapping booked dates
       safeFilters.bookedDates = {
         $not: {
           $elemMatch: {
@@ -265,13 +257,13 @@ const getProperties = async (req, res) => {
     // Validate and sanitize averageRating
     if (averageRating) {
       const parsedRating = parseFloat(averageRating);
-      if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
-        return res.status(400).json({ success: false, error: "Invalid average rating format. Must be between 1 and 5" });
+      if (isNaN(parsedRating)) {
+        return res.status(400).json({ success: false, error: "Invalid average rating format" });
       }
       safeFilters.averageRating = { $gte: parsedRating };
     }
 
-    // Exclude properties owned by the current user (if userId exists and is valid)
+    // Exclude properties owned by the current user
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       safeFilters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
     }
@@ -281,7 +273,7 @@ const getProperties = async (req, res) => {
 
     // Step 3: Return properties or handle case where no properties match
     if (properties.length === 0) {
-      return res.status(404).json({ success: false, error: "No properties found matching your criteria" });
+      return res.status(404).json({ success: false, error: "No properties found" });
     }
 
     res.status(200).json({ success: true, data: properties });
