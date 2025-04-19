@@ -203,12 +203,12 @@ const getProperties = async (req, res) => {
     const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
     const safeFilters = {};
 
-    // Validate and sanitize 'type'
+    // Validate 'type' and sanitize (ensure it's one of the valid types)
     if (type) {
       if (!validTypes.includes(type)) {
         return res.status(400).json({ success: false, error: "Invalid type" });
       }
-      safeFilters.type = type;
+      safeFilters.type = type;  // Safely assign as it is pre-validated
     }
 
     // Validate and sanitize location (ensure it's a string and clean the input)
@@ -216,19 +216,20 @@ const getProperties = async (req, res) => {
       if (typeof location !== 'string' || location.trim().length === 0) {
         return res.status(400).json({ success: false, error: "Invalid location format" });
       }
-      safeFilters.location = location.trim();  // Direct match instead of regex
+      // Sanitize location to prevent any malicious characters
+      safeFilters.location = location.trim();
     }
 
-    // Validate and sanitize price (must be a number and a valid format)
+    // Validate and sanitize price (ensure it's a valid number)
     if (price) {
       const parsedPrice = parseFloat(price);
       if (isNaN(parsedPrice) || parsedPrice < 0) {
         return res.status(400).json({ success: false, error: "Invalid price format" });
       }
-      safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
+      safeFilters.price = { $lte: parsedPrice };
     }
 
-    // Validate and sanitize maxGuests (must be an integer and a valid format)
+    // Validate and sanitize maxGuests (ensure it's an integer and valid)
     if (maxGuests) {
       const parsedGuests = parseInt(maxGuests);
       if (isNaN(parsedGuests)) {
@@ -237,7 +238,7 @@ const getProperties = async (req, res) => {
       safeFilters.maxGuests = { $lte: parsedGuests };
     }
 
-    // Validate and sanitize check-in/check-out dates
+    // Validate and sanitize check-in/check-out dates (ensure they're valid dates)
     if (checkIn && checkOut) {
       const parsedCheckIn = Date.parse(checkIn);
       const parsedCheckOut = Date.parse(checkOut);
