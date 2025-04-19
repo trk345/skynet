@@ -11,7 +11,7 @@ const PropertyForm = () => {
   const isEditMode = Boolean(id); // if id exists, we are in Edit mode
   const [property, setProperty] = useState({
     name: '',
-    type: 'standard-room',
+    type: 'Standard Room',
     description: '',
     location: '',
     address: '',
@@ -79,11 +79,11 @@ const PropertyForm = () => {
   
 
   const propertyTypes = [
-    { id: 'standard-room', name: 'Standard Room' },
-    { id: 'luxury-room', name: 'Luxury Room' },
-    { id: 'business-suite', name: 'Business Suite' },
-    { id: 'apartment', name: 'Apartment' },
-    { id: 'villa', name: 'Villa' }
+    { id: 'Standard Room', name: 'Standard Room' },
+    { id: 'Luxury Room', name: 'Luxury Room' },
+    { id: 'Business Suite', name: 'Business Suite' },
+    { id: 'Apartment', name: 'Apartment' },
+    { id: 'Villa', name: 'Villa' }
   ];
 
   const handleInputChange = (e) => {
@@ -443,7 +443,7 @@ const PropertyForm = () => {
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {propertyTypes.map(type => (
-                      <option key={type.id} value={type.name}>{type.name}</option>
+                      <option key={type.id} value={type.id}>{type.name}</option>
                     ))}
                   </select>
                 </div>

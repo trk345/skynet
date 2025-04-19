@@ -452,6 +452,10 @@ const UserDashboard = () => {
                           {property.status || 'Active'}
                         </span>
                       </div>
+
+                      <span className="truncate max-w-[150px] block" title={property.type}>
+                        {property.type || 'Unknown Type'}
+                      </span>
                       
                       <p className="text-gray-600 mb-1">
                         <span className="font-medium">Price:</span> ${property.price}/night

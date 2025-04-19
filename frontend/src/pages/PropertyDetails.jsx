@@ -591,31 +591,37 @@ const PropertyDetails = () => {
                         </h2>
 
                         {/* Check if user has already reviewed */}
-                        {user && !property.reviews.some((review) => review.userId === user._id) ? (
-                            <div className="bg-gray-50 p-4 rounded-lg border mb-6">
+                        {user && 
+                        !property.reviews.some((review) => review.userId === user._id) &&
+                        property.bookedDates.some((booking) => booking.userId === user._id) ? (
+                        <div className="bg-gray-50 p-4 rounded-lg border mb-6">
                             <h3 className="text-lg font-semibold mb-2 text-gray-700">Leave a Review</h3>
                             {renderInteractiveStars()}
                             <textarea
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                rows={3}
-                                placeholder="Write your comment here..."
-                                className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-2"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            rows={3}
+                            placeholder="Write your comment here..."
+                            className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-2"
                             ></textarea>
                             {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
                             <button
-                                onClick={handleSubmitReview}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                            onClick={handleSubmitReview}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
                             >
-                                Submit Review
+                            Submit Review
                             </button>
-                            </div>
+                        </div>
                         ) : (
-                            user && (
+                        user && (
                             <div className="text-gray-600 mb-4">
-                                <p>You have already reviewed this property.</p>
+                            <p>
+                                {property.reviews.some((review) => review.userId === user._id)
+                                ? 'You have already reviewed this property.'
+                                : 'You must book this property before leaving a review.'}
+                            </p>
                             </div>
-                            )
+                        )
                         )}
 
                         {/* Reviews by Others */}

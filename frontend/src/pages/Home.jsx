@@ -165,11 +165,11 @@ const Home = () => {
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select Property Type</option>
-              <option value="standard-room">Standard Room</option>
-              <option value="luxury-room">Luxury Room</option>
-              <option value="business-suite">Business Suite</option>
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
+              <option value="Standard Room">Standard Room</option>
+              <option value="Luxury Room">Luxury Room</option>
+              <option value="Business Suite">Business Suite</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Villa">Villa</option>
             </select>
 
             {/* Location */}
@@ -284,6 +284,10 @@ const Home = () => {
                         ${property.price}/night
                       </span>
                     </div>
+
+                    <span className="truncate max-w-[150px] block" title={property.type}>
+                      {property.type || 'Unknown Type'}
+                    </span>
                     
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="mr-2 text-blue-500" size={20} />

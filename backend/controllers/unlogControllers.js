@@ -194,7 +194,7 @@ const logout = (req, res) => {
 
 
 
-const allowedTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
+const allowedTypes = ['Standard Room', 'Luxury Room', 'Business Suite', 'Apartment', 'Villa'];
 
 const sanitizeAndValidate = (value, type) => {
   if (type === 'string') {
@@ -216,6 +216,12 @@ const getProperties = async (req, res) => {
     const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
 
     const query = {};
+
+    // Exclude properties owned by the logged-in user
+    const userId = getUserIdFromToken(req);
+    if (userId) {
+      query.userID = { $ne: userId };
+    }
 
     // Validate and sanitize input
     if (type) {
