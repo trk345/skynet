@@ -109,6 +109,9 @@ function PropertyImageGallery({ images = [] }) {
             {/* Full Screen Modal */}
             {isModalOpen && (
             <div 
+                role="dialog"
+                aria-modal="true"
+                aria-label="Image viewer"
                 className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
                 onClick={() => setIsModalOpen(false)}
                 onKeyDown={(e) => {
@@ -116,7 +119,7 @@ function PropertyImageGallery({ images = [] }) {
                         setIsModalOpen(false);
                     }
                 }}
-                tabIndex={0} // Allows div to capture key events
+                tabIndex={-1} // Still focusable, but won't show in tab order
             >
                 <div 
                     className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center"
@@ -684,48 +687,52 @@ const PropertyDetails = () => {
                             <div className="space-y-4">
                                 {/* Check In */}
                                 <div>
-                                <label className="block text-gray-700 mb-2">Check In</label>
-                                <DatePicker
-                                    selected={bookingDates.checkIn}
-                                    onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
-                                    minDate={new Date()} // ✅ Today or future only
-                                    maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                                    excludeDateIntervals={
-                                        property.bookedDates?.map(({ checkIn, checkOut }) => ({
-                                        start: new Date(checkIn),
-                                        end: new Date(checkOut),
-                                        })) || []
-                                    }
-                                    placeholderText="Select check-in date"
-                                    className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                    <label id="check-in-label" className="block text-gray-700 mb-2">Check In</label>
+                                    <div role="group" aria-labelledby="check-in-label">
+                                    <DatePicker
+                                        selected={bookingDates.checkIn}
+                                        onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
+                                        minDate={new Date()} // ✅ Today or future only
+                                        maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                                        excludeDateIntervals={
+                                            property.bookedDates?.map(({ checkIn, checkOut }) => ({
+                                            start: new Date(checkIn),
+                                            end: new Date(checkOut),
+                                            })) || []
+                                        }
+                                        placeholderText="Select check-in date"
+                                        className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    </div>
                                 </div>
 
                                 {/* Check Out */}
                                 <div>
-                                <label className="block text-gray-700 mb-2">Check Out</label>
-                                <DatePicker
-                                    selected={bookingDates.checkOut}
-                                    onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
-                                    minDate={
-                                        bookingDates.checkIn
-                                        ? new Date(bookingDates.checkIn.getTime() + 24 * 60 * 60 * 1000)
-                                        : new Date()
-                                    }
-                                    maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                                    excludeDateIntervals={
-                                        property.bookedDates?.map(({ checkIn, checkOut }) => ({
-                                        start: new Date(checkIn),
-                                        end: new Date(checkOut),
-                                        })) || []
-                                    }
-                                    placeholderText="Select check-out date"
-                                    className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                    <label id="check-out-label" className="block text-gray-700 mb-2">Check Out</label>
+                                    <div role="group" aria-labelledby="check-out-label">
+                                    <DatePicker
+                                        selected={bookingDates.checkOut}
+                                        onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
+                                        minDate={
+                                            bookingDates.checkIn
+                                            ? new Date(bookingDates.checkIn.getTime() + 24 * 60 * 60 * 1000)
+                                            : new Date()
+                                        }
+                                        maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                                        excludeDateIntervals={
+                                            property.bookedDates?.map(({ checkIn, checkOut }) => ({
+                                            start: new Date(checkIn),
+                                            end: new Date(checkOut),
+                                            })) || []
+                                        }
+                                        placeholderText="Select check-out date"
+                                        className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    </div>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-gray-700 mb-2">Guests</label>
+                                <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
                                     <div className="relative">
                                         <Users className="absolute top-3 left-3 text-gray-400" size={18} />
                                         <input

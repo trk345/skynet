@@ -201,6 +201,7 @@ const getProperties = async (req, res) => {
     const validTypes = ['standard-room', 'luxury-room', 'business-suite', 'apartment', 'villa'];
     const safeFilters = {};
 
+    // Validate and sanitize type
     if (type) {
       if (!validTypes.includes(type)) {
         return res.status(400).json({ success: false, error: "Invalid type" });
@@ -208,21 +209,24 @@ const getProperties = async (req, res) => {
       safeFilters.type = type;
     }
 
+    // Validate and sanitize location
     if (location) {
       if (typeof location !== 'string') {
         return res.status(400).json({ success: false, error: "Invalid location format" });
       }
-      safeFilters.location = { $regex: location, $options: 'i' };
+      safeFilters.location = { $regex: location, $options: 'i' };  // Case-insensitive search
     }
 
+    // Validate and sanitize price
     if (price) {
       const parsedPrice = parseFloat(price);
       if (isNaN(parsedPrice)) {
         return res.status(400).json({ success: false, error: "Invalid price format" });
       }
-      safeFilters.price = { $lte: parsedPrice };
+      safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
     }
 
+    // Validate and sanitize maxGuests
     if (maxGuests) {
       const parsedGuests = parseInt(maxGuests);
       if (isNaN(parsedGuests)) {
@@ -231,6 +235,7 @@ const getProperties = async (req, res) => {
       safeFilters.maxGuests = { $lte: parsedGuests };
     }
 
+    // Validate and sanitize dates (checkIn, checkOut)
     if (checkIn && checkOut) {
       const parsedCheckIn = Date.parse(checkIn);
       const parsedCheckOut = Date.parse(checkOut);
@@ -239,6 +244,12 @@ const getProperties = async (req, res) => {
         return res.status(400).json({ success: false, error: "Invalid date format" });
       }
 
+      // Ensure checkOut is after checkIn
+      if (parsedCheckOut <= parsedCheckIn) {
+        return res.status(400).json({ success: false, error: "Check-out date must be after check-in date" });
+      }
+
+      // Filter out properties with overlapping booked dates
       safeFilters.bookedDates = {
         $not: {
           $elemMatch: {
@@ -249,21 +260,27 @@ const getProperties = async (req, res) => {
       };
     }
 
+    // Validate and sanitize averageRating
     if (averageRating) {
       const parsedRating = parseFloat(averageRating);
-      if (isNaN(parsedRating)) {
-        return res.status(400).json({ success: false, error: "Invalid average rating format" });
+      if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return res.status(400).json({ success: false, error: "Invalid average rating format. Must be between 1 and 5" });
       }
       safeFilters.averageRating = { $gte: parsedRating };
     }
 
-    // Exclude properties owned by the current user
+    // Exclude properties owned by the current user (if userId exists and is valid)
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       safeFilters.userID = { $ne: new mongoose.Types.ObjectId(userId) };
     }
 
     // Step 2: Execute query with pre-validated filters
     const properties = await Property.find(safeFilters);
+
+    // Step 3: Return properties or handle case where no properties match
+    if (properties.length === 0) {
+      return res.status(404).json({ success: false, error: "No properties found matching your criteria" });
+    }
 
     res.status(200).json({ success: true, data: properties });
   } catch (error) {

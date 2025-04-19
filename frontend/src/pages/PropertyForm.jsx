@@ -433,7 +433,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">Property Type*</label>
+                  <label htmlFor="type" className="block text-gray-700 mb-2">Property Type*</label>
                   <select
                     id="type"
                     name="type"
@@ -602,7 +602,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">Size (sq ft)</label>
+                  <label htmlFor="squareFeet" className="block text-gray-700 mb-2">Size (sq ft)</label>
                   <div className="relative">
                     <Square className="absolute top-3 left-3 text-gray-400" size={20} />
                     <input
@@ -672,7 +672,7 @@ const PropertyForm = () => {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">Available From</label>
+                  <label htmlFor="startDate" className="block text-gray-700 mb-2">Available From</label>
                   <input
                     id="startDate"
                     type="date"
