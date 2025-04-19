@@ -191,6 +191,8 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logout successful" });
 };
 
+
+
 const getProperties = async (req, res) => {
   const userId = getUserIdFromToken(req);  // Removed 'res' since not used inside the token function
 
@@ -209,27 +211,27 @@ const getProperties = async (req, res) => {
       safeFilters.type = type;
     }
 
-    // Validate and sanitize location
+    // Validate and sanitize location (ensure it's a string and clean the input)
     if (location) {
-      if (typeof location !== 'string') {
+      if (typeof location !== 'string' || location.trim().length === 0) {
         return res.status(400).json({ success: false, error: "Invalid location format" });
       }
-      safeFilters.location = { $regex: location, $options: 'i' };  // Case-insensitive search
+      safeFilters.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') }; // Case-insensitive regex
     }
 
-    // Validate and sanitize price
+    // Validate and sanitize price (must be a number and a valid format)
     if (price) {
       const parsedPrice = parseFloat(price);
-      if (isNaN(parsedPrice)) {
+      if (isNaN(parsedPrice) || parsedPrice < 0) {
         return res.status(400).json({ success: false, error: "Invalid price format" });
       }
       safeFilters.price = { $lte: parsedPrice };  // Assuming max price filter
     }
 
-    // Validate and sanitize maxGuests
+    // Validate and sanitize maxGuests (must be an integer)
     if (maxGuests) {
       const parsedGuests = parseInt(maxGuests);
-      if (isNaN(parsedGuests)) {
+      if (isNaN(parsedGuests) || parsedGuests < 1) {
         return res.status(400).json({ success: false, error: "Invalid guests format" });
       }
       safeFilters.maxGuests = { $lte: parsedGuests };
