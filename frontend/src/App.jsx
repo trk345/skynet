@@ -1,7 +1,6 @@
 import Home from './pages/Home.jsx'
 import Contact from './pages/Contact.jsx'
-import CreateProperty from './pages/PropertyForm.jsx'
-import EditProperty from './pages/PropertyForm.jsx'
+import PropertyForm from './pages/PropertyForm.jsx'
 import PropertyDetails from './pages/PropertyDetails.jsx'
 import AdminLoginPage from './pages/AdminLogin.jsx'
 import UserSignUpPage from './pages/UserSignup.jsx'
@@ -22,9 +21,9 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/create-property" element={<CreateProperty />} />
+        <Route path="/create-property" element={<PropertyForm />} />
         <Route path="/property/:id" element={<PropertyDetails />} />
-        <Route path="/edit-property/:id" element={<EditProperty />} />
+        <Route path="/edit-property/:id" element={<PropertyForm />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/login" element={<UserLoginPage />} />
