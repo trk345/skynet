@@ -211,78 +211,92 @@ const sanitizeAndValidate = (value, type) => {
   return null;
 };
 
+// Helper functions to apply filters
+const applyTypeFilter = (type, query) => {
+  if (type) {
+    const sanitizedType = sanitizeAndValidate(type, 'string');
+    if (sanitizedType && allowedTypes.includes(sanitizedType)) {
+      query.type = sanitizedType;
+    }
+  }
+};
+
+const applyLocationFilter = (location, query) => {
+  if (location && typeof location === 'string') {
+    query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' };
+  }
+};
+
+const applyPriceFilter = (price, query) => {
+  if (price) {
+    const maxPrice = sanitizeAndValidate(price, 'number');
+    if (maxPrice !== null) query.price = { $lte: maxPrice };
+  }
+};
+
+const applyGuestsFilter = (maxGuests, query) => {
+  if (maxGuests) {
+    const guests = sanitizeAndValidate(maxGuests, 'number');
+    if (guests !== null) query.maxGuests = { $lte: guests };
+  }
+};
+
+const applyRatingFilter = (averageRating, query) => {
+  if (averageRating) {
+    const rating = sanitizeAndValidate(averageRating, 'number');
+    if (rating !== null) query.averageRating = { $gte: rating };
+  }
+};
+
+const applyDateFilter = (checkIn, checkOut, query) => {
+  if (checkIn && checkOut) {
+    const inDate = sanitizeAndValidate(checkIn, 'date');
+    const outDate = sanitizeAndValidate(checkOut, 'date');
+
+    if (inDate && outDate && outDate > inDate) {
+      query.bookedDates = {
+        $not: {
+          $elemMatch: {
+            $or: [
+              {
+                checkIn: { $lt: outDate },
+                checkOut: { $gt: inDate },
+              }
+            ]
+          }
+        }
+      };
+    }
+  }
+};
+
 const getProperties = async (req, res) => {
   try {
     const { type, location, price, maxGuests, checkIn, checkOut, averageRating } = req.query;
 
     const query = {};
+    const userId = getUserIdFromToken(req);
 
     // Exclude properties owned by the logged-in user
-    const userId = getUserIdFromToken(req);
-    if (userId) {
-      query.userID = { $ne: userId };
-    }
+    if (userId) query.userID = { $ne: userId };
 
-    // Validate and sanitize input
-    if (type) {
-      const sanitizedType = sanitizeAndValidate(type, 'string');
-      if (sanitizedType && allowedTypes.includes(sanitizedType)) {
-        query.type = sanitizedType;
-      }
-    }
+    // Handle filters
+    applyTypeFilter(type, query);
+    applyLocationFilter(location, query);
+    applyPriceFilter(price, query);
+    applyGuestsFilter(maxGuests, query);
+    applyRatingFilter(averageRating, query);
+    applyDateFilter(checkIn, checkOut, query);
 
-    if (location && typeof location === 'string') {
-      query.location = { $regex: sanitizeAndValidate(location, 'string'), $options: 'i' };
-    }
-
-    if (price) {
-      const maxPrice = sanitizeAndValidate(price, 'number');
-      if (maxPrice !== null) query.price = { $lte: maxPrice };
-    }
-
-    if (maxGuests) {
-      const guests = sanitizeAndValidate(maxGuests, 'number');
-      if (guests !== null) query.maxGuests = { $gte: guests };
-    }
-
-    if (averageRating) {
-      const rating = sanitizeAndValidate(averageRating, 'number');
-      if (rating !== null) query.averageRating = { $gte: rating };
-    }
-
-    if (checkIn && checkOut) {
-      const inDate = sanitizeAndValidate(checkIn, 'date');
-      const outDate = sanitizeAndValidate(checkOut, 'date');
-
-      if (inDate && outDate && outDate > inDate) {
-        query.bookedDates = {
-          $not: {
-            $elemMatch: {
-              $or: [
-                {
-                  checkIn: { $lt: outDate },
-                  checkOut: { $gt: inDate }
-                }
-              ]
-            }
-          }
-        };
-      }
-    }
-
+    // Fetch properties
     const properties = await Property.find(query).exec();
 
-    res.json({
-      success: true,
-      data: properties,
-    });
+    res.json({ success: true, data: properties });
   } catch (error) {
     console.error('Error fetching properties:', error);
     res.status(500).json({ success: false, error: 'Server Error' });
   }
 };
-
-
 
 
 // Fetch a single Property
