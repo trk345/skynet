@@ -1,4 +1,4 @@
-import Home from './pages/Home.jsx'
+import { Home } from './pages/Home.jsx'
 import Contact from './pages/Contact.jsx'
 import PropertyForm from './pages/PropertyForm.jsx'
 import PropertyDetails from './pages/PropertyDetails.jsx'
