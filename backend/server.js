@@ -31,9 +31,16 @@ app.use(cookieParser()); // Parse cookies
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads')); // Serve static files
 
-// CORS Middleware (Allow frontend at port 5173)
+// CORS Middleware (Allow frontend)
+const allowedOrigins = ['http://localhost:5173', 'https://skynet1.netlify.app'];
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies & authentication
 }));
 
