@@ -248,16 +248,11 @@ const Contact = () => {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl shadow-xl p-10">
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      {/* {showVendorForm ? 'Vendor Application' : 'Send a Message'} */}
-                    </h2>
-                    
                     {activeSection === 'contact' && (
                       <button 
                         onClick={() => setShowVendorForm(!showVendorForm)}
                         className="text-blue-600 hover:text-blue-800 transition-colors duration-300 flex items-center"
                       >
-                        {/* <span>{showVendorForm ? 'Send a general message instead' : 'Apply as a vendor'}</span> */}
                       </button>
                     )}
                   </div>
@@ -376,7 +371,6 @@ const Contact = () => {
                           onChange={handleInputChange}
                           rows="5"
                           className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        //   placeholder={showVendorForm ? "Tell us about your property and business..." : "How can we help you?"}
                           placeholder={"Tell us about your property and business..."}
                           required
                         ></textarea>
