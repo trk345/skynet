@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const PropertyImageGallery = ({ images = [] }) => {
+export const PropertyImageGallery = ({ images = [] }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // If no images, return default icon
@@ -86,7 +86,7 @@ const PropertyImageGallery = ({ images = [] }) => {
 };
 
 
-const Home = () => {
+export const Home = () => {
   const [searchParams, setSearchParams] = useState({
     type: '',
     location: '',
@@ -362,18 +362,6 @@ const Home = () => {
             ))}
           </div>
         )}
-          
-          {/* View All Properties Button
-          {properties.length > 0 && (
-            <div className="text-center mt-12">
-              <Link 
-                to="/properties" 
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-300 inline-block"
-              >
-                View All Properties
-              </Link>
-            </div>
-          )} */}
         </section>    
 
     </div>
@@ -386,5 +374,3 @@ const Home = () => {
 PropertyImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
 };
-
-export default Home;
