@@ -31,9 +31,16 @@ app.use(cookieParser()); // Parse cookies
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads')); // Serve static files
 
-// CORS Middleware (Allow frontend at port 5173)
+// CORS Middleware (Allow frontend)
+const allowedOrigins = ['http://localhost:5173', 'https://skynet1.netlify.app'];
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies & authentication
 }));
 
@@ -189,13 +196,13 @@ app.use('/api/admin', authenticateJWT, adminRoutes); // Protected
 app.use('/api/user', authenticateJWT, userRoutes);  // Protected
 app.use('/api/vendor', authenticateJWT, vendorRoutes); // Protected
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
+// // Serve static files
+// app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 
-// Catch-all route for React
-app.get('*', limiter, (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
-});
+// // Catch-all route for React
+// app.get('*', limiter, (req, res) => {
+//   res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+// });
 
 if (!process.env.MONGO_URI) {
   console.error("❌ MONGO_URI is missing in .env file!");
