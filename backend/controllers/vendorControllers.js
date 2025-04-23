@@ -166,7 +166,7 @@ function isValidAvailability({ startDate, endDate }) {
 }
 
 function isValidDate(date) {
-  return typeof date === 'string' && !isNaN(Date.parse(date));
+  return typeof date === 'string' && (date === '' || !isNaN(Date.parse(date)));
 }
 
 function mergeImages(existingImages, removedImages, newFiles) {
