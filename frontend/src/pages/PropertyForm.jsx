@@ -832,7 +832,7 @@ const PropertyForm = () => {
             {/* Preview of Selected Images */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {preview.map((image, index) => (
-                <div key={index} className="relative group">
+                <div key={image.preview} className="relative group">
                   <img
                     src={image.preview}
                     alt={`preview-${index}`}
