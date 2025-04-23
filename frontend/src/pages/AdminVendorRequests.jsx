@@ -123,11 +123,11 @@ const VendorRequestPage = () => {
                 {/* Name row */}
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+                    <span className="block text-sm font-medium text-gray-600 mb-1">First Name</span>
                     <p className="text-gray-900 font-medium">{selectedRequest.firstName || "N/A"}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+                    <span className="block text-sm font-medium text-gray-600 mb-1">Last Name</span>
                     <p className="text-gray-900 font-medium">{selectedRequest.lastName || "N/A"}</p>
                   </div>
                 </div>
@@ -135,18 +135,18 @@ const VendorRequestPage = () => {
                 {/* Contact info */}
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                    <span className="block text-sm font-medium text-gray-600 mb-1">Email</span>
                     <p className="text-gray-900 font-medium">{selectedRequest.email}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Mobile</label>
+                    <span className="block text-sm font-medium text-gray-600 mb-1">Mobile</span>
                     <p className="text-gray-900 font-medium">{selectedRequest.mobile || "N/A"}</p>
                   </div>
                 </div>
                 
                 {/* Message */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-600 mb-2">Message</label>
+                  <span className="block text-sm font-medium text-gray-600 mb-2">Message</span>
                   <div className="bg-white p-3 rounded border border-gray-200 max-h-32 overflow-y-auto">
                     <p className="text-gray-800 whitespace-pre-line">{selectedRequest.message}</p>
                   </div>
