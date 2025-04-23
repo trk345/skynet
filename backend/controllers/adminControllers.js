@@ -30,8 +30,6 @@ const getUsers = async (req, res) => {
   }
 };
 
-
-
 const getVendorRequests = async (req, res) => {
   try {
     const requests = await VendorRequest.find().populate("requesterID", "username email role"); // Find all vendor requests and populate the requesterID field with corr. requester details
@@ -42,60 +40,6 @@ const getVendorRequests = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" }); // ✅ Consistent Error Format
   }
 };
-
-// const getVendorRequests = async (req, res) => {
-//   try {
-//     const requests = await User.find({ requests: { $exists: true, $ne: [] } })
-//       .select("requests")
-//       .populate("requests.requesterID", "username email role"); // Populate requester details
-
-//     res.status(200).json(requests);
-//   } catch (error) {
-//     res.status(500).json({ error: "Failed to fetch requests", details: error.message });
-//   }
-// };
-
-
-// // Secure route: Post Vendor Requests
-// const postVendorRequest = async (req, res) => {
-//   const session = await mongoose.startSession(); // Start transaction session
-//   session.startTransaction();
-  
-//   try {
-//       const requesterID = req.user.userId; // Extract user ID from authenticated token
-//       const { firstName, lastName, email, mobile, message } = req.body;
-
-//       if (!firstName || !lastName || !email || !mobile || !message) {
-//           return res.status(400).json({ error: "Message is required" });
-//       }
-
-//       // Update user's pending status
-//       await User.findByIdAndUpdate(requesterID, { pendingStatus: "pending" }, { session });
-
-//       // Save vendor request
-//       const newRequest = new VendorRequest({ 
-//         requesterID, 
-//         firstName, 
-//         lastName, 
-//         email, 
-//         mobile, 
-//         message 
-//       });
-//       await newRequest.save({ session }); // Ensure transaction consistency
-
-//       await session.commitTransaction();
-//       res.status(201).json({ message: "Message saved successfully!", data: newRequest });
-
-//   } catch (error) {
-//       await session.abortTransaction(); // Rollback on error
-//       console.error("Error saving request", error);
-//       res.status(500).json({ error: "Internal Server Error" });
-//   } finally {
-//       session.endSession(); // Clean up session
-//   }
-// };
-
-
 
 const updateVendorRequest = async (req, res) => {
   const { requestId, action } = req.body;
