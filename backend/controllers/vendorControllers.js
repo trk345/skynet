@@ -113,65 +113,78 @@ const handleImageDeletion = (existingImages, removedImages) => {
   return existingImages.filter(img => !removedImages.includes(img));
 };
 
+function buildUpdatedData(body, existing) {
+  const data = {
+    name: sanitizeAndParse(body.updatedName),
+    type: sanitizeAndParse(body.updatedType),
+    description: sanitizeAndParse(body.updatedDescription),
+    location: sanitizeAndParse(body.updatedLocation),
+    address: sanitizeAndParse(body.updatedAddress),
+    squareFeet: sanitizeAndParse(body.updatedSquareFeet),
+    price: parseIfValidNumber(body.updatedPrice),
+    bedrooms: parseIfValidNumber(body.updatedBedrooms),
+    bathrooms: parseIfValidNumber(body.updatedBathrooms),
+    maxGuests: parseIfValidNumber(body.updatedMaxGuests),
+  };
+
+  const amenities = validateJSON(body.updatedAmenities);
+  const availability = validateJSON(body.updatedAvailability);
+
+  if (body.updatedAmenities && !amenities) return null;
+  if (body.updatedAvailability && !availability) return null;
+
+  if (amenities) data.amenities = filterValidAmenities(amenities);
+  if (availability && isValidAvailability(availability)) {
+    data.availability = {
+      startDate: availability.startDate,
+      endDate: availability.endDate
+    };
+  } else if (availability) return null;
+
+  const { emailValid, mobileValid } = validateInputFormats(body.updatedEmail, body.updatedMobile);
+  if (!emailValid || !mobileValid) return null;
+
+  data.email = body.updatedEmail ? sanitizeAndParse(body.updatedEmail) : existing.email;
+  data.mobile = body.updatedMobile ? sanitizeAndParse(body.updatedMobile) : existing.mobile;
+
+  return data;
+}
+
+function parseIfValidNumber(value) {
+  return value && !isNaN(value) ? Number(value) : undefined;
+}
+
+function filterValidAmenities(amenities) {
+  const allowed = ['wifi', 'parking', 'breakfast', 'airConditioning', 'heating', 'tv', 'kitchen', 'workspace'];
+  return Object.fromEntries(
+    Object.entries(amenities).filter(([key, val]) => allowed.includes(key) && typeof val === 'boolean')
+  );
+}
+
+function isValidAvailability({ startDate, endDate }) {
+  return isValidDate(startDate) && isValidDate(endDate);
+}
+
+function isValidDate(date) {
+  return typeof date === 'string' && !isNaN(Date.parse(date));
+}
+
+function mergeImages(existingImages, removedImages, newFiles) {
+  const remainingImages = handleImageDeletion(existingImages, removedImages);
+  const newImagePaths = newFiles.map(file => file.path);
+  return [...remainingImages, ...newImagePaths];
+}
+
 const updateProperty = async (req, res) => {
   try {
     const propertyID = req.params.id;
     const existingProperty = await Property.findById(propertyID);
     if (!existingProperty) return res.status(404).json({ message: "Property not found" });
 
-    const updatedData = {
-      name: sanitizeAndParse(req.body.updatedName),
-      type: sanitizeAndParse(req.body.updatedType),
-      description: sanitizeAndParse(req.body.updatedDescription),
-      location: sanitizeAndParse(req.body.updatedLocation),
-      address: sanitizeAndParse(req.body.updatedAddress),
-      squareFeet: sanitizeAndParse(req.body.updatedSquareFeet),
-      price: req.body.updatedPrice && !isNaN(req.body.updatedPrice) ? Number(req.body.updatedPrice) : undefined,
-      bedrooms: req.body.updatedBedrooms && !isNaN(req.body.updatedBedrooms) ? Number(req.body.updatedBedrooms) : undefined,
-      bathrooms: req.body.updatedBathrooms && !isNaN(req.body.updatedBathrooms) ? Number(req.body.updatedBathrooms) : undefined,
-      maxGuests: req.body.updatedMaxGuests && !isNaN(req.body.updatedMaxGuests) ? Number(req.body.updatedMaxGuests) : undefined,
-    };
+    const updatedData = buildUpdatedData(req.body, existingProperty);
+    if (!updatedData) return res.status(400).json({ message: "Invalid input format" });
 
-    const amenities = validateJSON(req.body.updatedAmenities);
-    const availability = validateJSON(req.body.updatedAvailability);
-    if (req.body.updatedAmenities && !amenities) return res.status(400).json({ message: "Invalid format for amenities" });
-    if (req.body.updatedAvailability && !availability) return res.status(400).json({ message: "Invalid format for availability" });
-    if (amenities) {
-      const allowedAmenities = ['wifi', 'parking', 'breakfast', 'airConditioning', 'heating', 'tv', 'kitchen', 'workspace'];
-      updatedData.amenities = Object.fromEntries(
-        Object.entries(amenities).filter(([key, value]) =>
-          allowedAmenities.includes(key) && typeof value === 'boolean'
-        )
-      );
-    }
-    if (availability) {
-      const { startDate, endDate } = availability;
-      const isValidDate = date => typeof date === 'string' && !isNaN(Date.parse(date));
-    
-      if (!isValidDate(startDate) || !isValidDate(endDate)) {
-        return res.status(400).json({ message: "Invalid date format in availability" });
-      }
-    
-      updatedData.availability = { startDate, endDate };
-    }
-    
-
-    const { emailValid, mobileValid } = validateInputFormats(req.body.updatedEmail, req.body.updatedMobile);
-    if (!emailValid) return res.status(400).json({ message: "Invalid email format" });
-    if (!mobileValid) return res.status(400).json({ message: "Invalid mobile number format" });
-
-    updatedData.email = emailValid && req.body.updatedEmail
-      ? sanitizeAndParse(req.body.updatedEmail)
-      : existingProperty.email;
-
-    updatedData.mobile = mobileValid && req.body.updatedMobile
-      ? sanitizeAndParse(req.body.updatedMobile)
-      : existingProperty.mobile;
-
-    let updatedImagePaths = handleImageDeletion(existingProperty.images, req.body.removedImages);
-    const newImagePaths = req.files.map(file => file.path);
-    updatedImagePaths = [...updatedImagePaths, ...newImagePaths];
-    updatedData.images = updatedImagePaths;
+    updatedData.images = mergeImages(existingProperty.images, req.body.removedImages, req.files);
 
     await Property.findByIdAndUpdate(propertyID, updatedData, { new: true });
     res.status(200).json({ message: "Property Updated" });
