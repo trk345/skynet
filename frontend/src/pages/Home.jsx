@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { School, Search, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from 'axios';
@@ -285,9 +285,15 @@ export const Home = () => {
                       </span>
                     </div>
 
-                    <span className="truncate max-w-[150px] block" title={property.type}>
-                      {property.type || 'Unknown Type'}
-                    </span>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <School className="mr-2 text-blue-500" size={20} />
+                      <span
+                        className="truncate max-w-[200px]"
+                        title={property.type || 'Unknown Type'}
+                      >
+                        {property.type || 'Unknown Type'}
+                      </span>
+                    </div>
                     
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="mr-2 text-blue-500" size={20} />
