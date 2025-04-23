@@ -69,6 +69,16 @@ const Contact = () => {
     }
   };
 
+  const getSectionClasses = (sectionName) => {
+    if (activeSection !== sectionName) {
+      return 'hidden';
+    }
+    
+    return isLoaded 
+      ? 'translate-y-0 opacity-100 block'
+      : 'translate-y-10 opacity-0 block';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <Navbar />
@@ -101,15 +111,7 @@ const Contact = () => {
         </div>
         
         {/* Welcome Section */}
-        <div 
-          className={`transform transition-all duration-700 ${
-            isLoaded && activeSection === 'welcome' 
-              ? 'translate-y-0 opacity-100 block' 
-              : activeSection === 'welcome' 
-                ? 'translate-y-10 opacity-0 block' 
-                : 'hidden'
-          }`}
-        >
+        <div className={`transform transition-all duration-700 ${getSectionClasses('welcome')}`}>
           <div className="text-center mb-16">
             <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">
               Welcome to <span className="text-blue-600">Skynet</span>
@@ -168,15 +170,7 @@ const Contact = () => {
         </div>
         
         {/* Contact Section */}
-        <div 
-          className={`transform transition-all duration-700 ${
-            isLoaded && activeSection === 'contact' 
-              ? 'translate-y-0 opacity-100 block' 
-              : activeSection === 'contact' 
-                ? 'translate-y-10 opacity-0 block' 
-                : 'hidden'
-          }`}
-        >
+        <div className={`transform transition-all duration-700 ${getSectionClasses('contact')}`}>
           <div className="text-center mb-16">
             <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">Get In Touch</h1>
             <div className="w-24 h-1 bg-blue-600 mx-auto mb-8 rounded-full"></div>
@@ -383,7 +377,6 @@ const Contact = () => {
                         className="bg-blue-600 text-white py-4 px-10 rounded-full hover:bg-blue-700 transition duration-300 flex items-center text-lg font-medium shadow-lg hover:shadow-xl cursor-pointer"
                       >
                         <Send className="mr-2" size={20} />
-                        {/* {showVendorForm ? 'Submit Application' : 'Send Message'} */}
                         Submit Application
                       </button>
                     </div>
