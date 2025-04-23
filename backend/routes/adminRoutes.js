@@ -18,9 +18,6 @@ const limiter = rateLimit({
 
 router.get('/getUsers', getUsers);
 router.get("/getVendorRequests", getVendorRequests);
-
-// router.post("/postVendorRequest", limiter, postVendorRequest);
-
 router.put("/updateVendorRequest", updateVendorRequest);
 
 module.exports = router;
