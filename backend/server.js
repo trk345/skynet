@@ -90,7 +90,7 @@ passport.use(new GoogleStrategy(
   {
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `http://localhost:${process.env.PORT}/auth/google/callback`,
+    callbackURL: `${process.env.GOOGLE_SERVER_HOST}/auth/google/callback`,
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -135,7 +135,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login", session: false }),
   async (req, res) => {
     if (!req.user) {
-      return res.redirect("http://localhost:5173/login?error=GoogleAuthFailed");
+      return res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/login?error=GoogleAuthFailed`);
     }
 
     try {
@@ -154,10 +154,10 @@ app.get(
       });
 
       // Redirect to frontend
-      res.redirect("http://localhost:5173/auth-success");
+      res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/auth-success`);
     } catch (error) {
       console.error("Error updating lastLogin:", error);
-      res.redirect("http://localhost:5173/login?error=ServerError");
+      res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/login?error=ServerError`);
     }
   }
 );
