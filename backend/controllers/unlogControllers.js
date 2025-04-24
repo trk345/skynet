@@ -63,7 +63,8 @@ const login = async (req, res) => {
 
     res.status(200).json({ message: "Login successful" });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+      console.error("User Login Error:", error);
+      res.status(500).json({ message: "Server error during user login" });
   }
 };
 
@@ -106,8 +107,8 @@ const adminLogin = async (req, res) => {
 
     res.status(200).json({ message: "Admin login successful" });
   } catch (error) {
-    console.error("Admin Login Error:", error);
-    res.status(500).json({ message: "Server error" });
+      console.error("Admin Login Error:", error);
+      res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -163,8 +164,8 @@ const signup = async (req, res) => {
     res.status(201).json({ message: 'Signup successful, please log in' });
 
   } catch (error) {
-    console.error('Signup Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+      console.error('Signup Error:', error);
+      res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -180,8 +181,8 @@ const authMe = async (req, res) => {
 
     res.json({ user });
   } catch (error) {
-    console.error("Error in authMe:", error);
-    res.status(500).json({ message: "Server error" });
+      console.error("Error in authMe:", error);
+      res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -293,8 +294,8 @@ const getProperties = async (req, res) => {
 
     res.json({ success: true, data: properties });
   } catch (error) {
-    console.error('Error fetching properties:', error);
-    res.status(500).json({ success: false, error: 'Server Error' });
+      console.error('Error fetching properties:', error);
+      res.status(500).json({ success: false, error: 'Server Error' });
   }
 };
 
@@ -305,7 +306,8 @@ const getProperty = async (req, res) => {
     const property = await Property.findById(req.params.id);
     res.status(200).json({ success: true, data: property });
   } catch (error) {
-    res.status(500).json({ success: false, error: "Could not fetch the property in server" })
+      console.error('Error fetching property:', error);
+      res.status(500).json({ success: false, error: "Could not fetch the property in server" })
   }
 }
 
