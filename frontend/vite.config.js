@@ -17,7 +17,7 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     exclude: [...configDefaults.exclude, 'dist'],
     coverage: {
-      reporter: ['text', 'html'], // Generates terminal + HTML reports
+      reporter: ['text', 'html', 'lcov'], // Generates terminal + HTML reports
     },
   },
 })
