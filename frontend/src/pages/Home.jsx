@@ -104,23 +104,6 @@ export const Home = () => {
       [name]: value
     }));
   };
-  const handleSearch = async () => {
-    try {
-      // Send the search parameters to the backend
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/getProperties`, {
-        withCredentials: true,
-        params: { ...searchParams } // send all search params
-      });
-  
-      if (response.data.success) {
-        setProperties(response.data.data); // Set the filtered properties
-      } else {
-        console.log("Failed to fetch properties:", response.data.error);
-      }
-    } catch (error) {
-      console.log("Error fetching properties:", error);
-    }
-  };
 
   const [properties, setProperties] = useState([]);
 
@@ -232,13 +215,6 @@ export const Home = () => {
             />
           </div>
 
-          {/* Search Button */}
-          <button type="button"
-            onClick={handleSearch}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
-          >
-            <Search className="inline-block mr-2" size={20} /> Search Rooms
-          </button>
         </div>
       </div>
           
@@ -312,7 +288,7 @@ export const Home = () => {
                       <div className="flex items-center">
                         {[...Array(5)].map((_, index) => (
                           <svg 
-                            key={index} 
+                            key={`placeholder-${index}`} 
                             className={`w-5 h-5 ${
                               index < Math.floor(property.averageRating || 0) 
                                 ? 'text-yellow-400' 

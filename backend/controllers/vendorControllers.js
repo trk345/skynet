@@ -171,7 +171,7 @@ function isValidDate(date) {
 
 function mergeImages(existingImages, removedImages, newFiles) {
   const remainingImages = handleImageDeletion(existingImages, removedImages);
-  const newImagePaths = newFiles.map(file => file.path);
+  const newImagePaths = (newFiles || []).map(file => file.path);
   return [...remainingImages, ...newImagePaths];
 }
 
