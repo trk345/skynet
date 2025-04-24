@@ -263,6 +263,209 @@ const UserDashboard = () => {
     }
 };
 
+  // Function to render the appropriate content based on loading state and available properties
+  const renderPropertyContent = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Loading properties...</p>
+        </div>
+      );
+    } else if (sortedProperties.length === 0) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <Building size={60} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold mb-2 text-gray-700">No Properties Found</h3>
+          <p className="text-gray-600 mb-6">You haven&apos;t added any properties yet or none match your search.</p>
+          <Link 
+            to="/create-property" 
+            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300"
+          >
+            <Plus size={18} className="mr-2" /> Add Your First Property
+          </Link>
+        </div>
+      );
+    } else {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+          {sortedProperties.map((property) => (
+            <div key={property._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+              {/* Property Image/Icon */}
+              <div className="bg-gray-100 h-48 flex items-center justify-center">
+                {property.images ? (
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL}/${property.images[0]}`}
+                    alt={property.name}
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <Building className="text-blue-600" size={80} />
+                )}
+              </div>
+              
+              {/* Property Details */}
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-semibold text-gray-800">{property.name}</h3>
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                    {property.status || 'Active'}
+                  </span>
+                </div>
+
+                <span className="truncate max-w-[150px] block" title={property.type}>
+                  {property.type || 'Unknown Type'}
+                </span>
+                
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Price:</span> ${property.price}/night
+                </p>
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Location:</span> {property.location || 'Not specified'}
+                </p>
+                <p className="text-gray-600 mb-4">
+                  <span className="font-medium">Guests:</span> {property.maxGuests || 'Not specified'}
+                </p>
+                
+                {/* Ratings and Reviews */}
+                <div className="mb-4">
+                  <div className="flex items-center mb-1">
+                    {renderStars(property.rating || 0)}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <MessageCircle size={16} className="mr-1" /> 
+                    {property.reviews?.length || 0} {property.reviews?.length === 1 ? 'review' : 'reviews'}
+                  </div>
+                </div>
+                
+                {/* Latest Review Preview (if available) */}
+                {property.reviews && property.reviews.length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
+                    <p className="text-gray-700 italic">&quot;{property.reviews[0].comment?.substring(0, 60)}...&quot;</p>
+                    <p className="text-gray-500 text-xs mt-1">— {property.reviews[0].user || 'Anonymous'}</p>
+                  </div>
+                )}
+                
+                {/* Action Buttons */}
+                <div className="flex justify-between mt-4">
+                  <Link 
+                    to={`/property/${property._id}`}
+                    className="bg-blue-50 text-blue-600 py-2 px-4 rounded hover:bg-blue-100 transition duration-300"
+                  >
+                    <Eye size={16} className="inline mr-1" /> View
+                  </Link>
+                  <Link 
+                    to={`/edit-property/${property._id}`}
+                    className="bg-yellow-50 text-yellow-600 py-2 px-4 rounded hover:bg-yellow-100 transition duration-300"
+                  >
+                    <Edit size={16} className="inline mr-1" /> Edit
+                  </Link>
+                  <button 
+                    type="button"
+                    onClick={() => handleDeleteProperty(property._id)}
+                    className="bg-red-50 text-red-600 py-2 px-4 rounded hover:bg-red-100 transition duration-300 cursor-pointer"
+                  >
+                    <Trash size={16} className="inline mr-1" /> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  };
+
+  // Function to render booking content based on loading state and available bookings
+  const renderBookingContent = () => {
+    if (isLoadingBookings) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Loading bookings...</p>
+        </div>
+      );
+    } else if (filteredBookings.length === 0) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <CalendarDays size={60} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold mb-2 text-gray-700">No Bookings Found</h3>
+          <p className="text-gray-600 mb-6">
+            {bookingFilter === 'upcoming' && "You don't have any upcoming bookings."}
+            {bookingFilter === 'current' && "You don't have any current bookings."}
+            {bookingFilter === 'past' && "You don't have any past bookings."}
+          </p>
+        </div>
+      );
+    } else {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+          {filteredBookings.map((booking) => (
+            <div key={booking._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+              {/* Property Image/Icon */}
+              <div className="bg-gray-100 h-48 flex items-center justify-center">
+                {booking.propertyId.images ? (
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL}/${booking.propertyId.images[0]}`}
+                    alt={booking.propertyId.name}
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <Building className="text-blue-600" size={80} />
+                )}
+              </div>
+              
+              {/* Booking Details */}
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-xl font-semibold text-gray-800">{booking.propertyId.name}</h3>
+                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(booking.status)}`}>
+                    {booking.status}
+                  </span>
+                </div>
+                
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Location:</span> {booking.propertyId.location || 'Not specified'}
+                </p>
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Guests:</span> {booking.guests}
+                </p>
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Check-in:</span> {formatDate(booking.checkIn)} ({formatTime(booking.checkIn)})
+                </p>
+                <p className="text-gray-600 mb-1">
+                  <span className="font-medium">Check-out:</span> {formatDate(booking.checkOut)} ({formatTime(booking.checkOut)})
+                </p>
+                <p className="text-gray-600 mb-4">
+                  <span className="font-medium">Total Amount:</span> ${booking.totalAmount}
+                </p>
+                
+                {/* Action Buttons */}
+                <div className="flex justify-between mt-4">
+                  <button 
+                    type="button"
+                    onClick={() => handleViewBooking(booking)}
+                    className="bg-blue-50 text-blue-600 py-2 px-4 rounded hover:bg-blue-100 transition duration-300 cursor-pointer"
+                  >
+                    <Eye size={16} className="inline mr-1" /> View Details
+                  </button>
+                  {(bookingFilter === 'upcoming' || bookingFilter === 'current') && (
+                    <button 
+                      type="button"
+                      onClick={() => handleCancelBooking(booking._id)}
+                      className="bg-red-50 text-red-600 py-2 px-4 rounded hover:bg-red-100 transition duration-300 cursor-pointer"
+                    >
+                      <X size={16} className="inline mr-1" /> Cancel Booking
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  };
+  
+  
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
@@ -411,108 +614,7 @@ const UserDashboard = () => {
               </div>
               
               {/* Properties List */}
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">Loading properties...</p>
-                </div>
-              ) : sortedProperties.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                  <Building size={60} className="mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-gray-700">No Properties Found</h3>
-                  <p className="text-gray-600 mb-6">You haven&apos;t added any properties yet or none match your search.</p>
-                  <Link 
-                    to="/create-property" 
-                    className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-300"
-                  >
-                    <Plus size={18} className="mr-2" /> Add Your First Property
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                  {sortedProperties.map((property) => (
-                    <div key={property._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                      {/* Property Image/Icon */}
-                      <div className="bg-gray-100 h-48 flex items-center justify-center">
-                        {property.images ? (
-                          <img 
-                            src={`${import.meta.env.VITE_API_URL}/${property.images[0]}`}
-                            alt={property.name}
-                            className="w-full h-full object-cover" 
-                          />
-                        ) : (
-                          <Building className="text-blue-600" size={80} />
-                        )}
-                      </div>
-                      
-                      {/* Property Details */}
-                      <div className="p-6">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-semibold text-gray-800">{property.name}</h3>
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                            {property.status || 'Active'}
-                          </span>
-                        </div>
-
-                        <span className="truncate max-w-[150px] block" title={property.type}>
-                          {property.type || 'Unknown Type'}
-                        </span>
-                        
-                        <p className="text-gray-600 mb-1">
-                          <span className="font-medium">Price:</span> ${property.price}/night
-                        </p>
-                        <p className="text-gray-600 mb-1">
-                          <span className="font-medium">Location:</span> {property.location || 'Not specified'}
-                        </p>
-                        <p className="text-gray-600 mb-4">
-                          <span className="font-medium">Guests:</span> {property.maxGuests || 'Not specified'}
-                        </p>
-                        
-                        {/* Ratings and Reviews */}
-                        <div className="mb-4">
-                          <div className="flex items-center mb-1">
-                            {renderStars(property.rating || 0)}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <MessageCircle size={16} className="mr-1" /> 
-                            {property.reviews?.length || 0} {property.reviews?.length === 1 ? 'review' : 'reviews'}
-                          </div>
-                        </div>
-                        
-                        {/* Latest Review Preview (if available) */}
-                        {property.reviews && property.reviews.length > 0 && (
-                          <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
-                            <p className="text-gray-700 italic">&quot;{property.reviews[0].comment?.substring(0, 60)}...&quot;</p>
-                            <p className="text-gray-500 text-xs mt-1">— {property.reviews[0].user || 'Anonymous'}</p>
-                          </div>
-                        )}
-                        
-                        {/* Action Buttons */}
-                        <div className="flex justify-between mt-4">
-                          <Link 
-                            to={`/property/${property._id}`}
-                            className="bg-blue-50 text-blue-600 py-2 px-4 rounded hover:bg-blue-100 transition duration-300"
-                          >
-                            <Eye size={16} className="inline mr-1" /> View
-                          </Link>
-                          <Link 
-                            to={`/edit-property/${property._id}`}
-                            className="bg-yellow-50 text-yellow-600 py-2 px-4 rounded hover:bg-yellow-100 transition duration-300"
-                          >
-                            <Edit size={16} className="inline mr-1" /> Edit
-                          </Link>
-                          <button 
-                            type="button"
-                            onClick={() => handleDeleteProperty(property._id)}
-                            className="bg-red-50 text-red-600 py-2 px-4 rounded hover:bg-red-100 transition duration-300 cursor-pointer"
-                          >
-                            <Trash size={16} className="inline mr-1" /> Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  </div>
-                )}
+              {renderPropertyContent()}
             </>
           )}
 
@@ -558,86 +660,7 @@ const UserDashboard = () => {
             </div>
             
             {/* Bookings Cards */}
-            {isLoadingBookings ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Loading bookings...</p>
-              </div>
-            ) : filteredBookings.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <CalendarDays size={60} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold mb-2 text-gray-700">No Bookings Found</h3>
-                <p className="text-gray-600 mb-6">
-                  {bookingFilter === 'upcoming' && "You don't have any upcoming bookings."}
-                  {bookingFilter === 'current' && "You don't have any current bookings."}
-                  {bookingFilter === 'past' && "You don't have any past bookings."}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                {filteredBookings.map((booking) => (
-                  <div key={booking._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                    {/* Property Image/Icon */}
-                    <div className="bg-gray-100 h-48 flex items-center justify-center">
-                      {booking.propertyId.images ? (
-                        <img 
-                        src={`${import.meta.env.VITE_API_URL}/${booking.propertyId.images[0]}`}
-                          alt={booking.propertyId.name}
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <Building className="text-blue-600" size={80} />
-                      )}
-                    </div>
-                    
-                    {/* Booking Details */}
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800">{booking.propertyId.name}</h3>
-                        <span className={`text-xs px-2 py-1 rounded ${getStatusColor(booking.status)}`}>
-                          {booking.status}
-                        </span>
-                      </div>
-                      
-                      <p className="text-gray-600 mb-1">
-                        <span className="font-medium">Location:</span> {booking.propertyId.location || 'Not specified'}
-                      </p>
-                      <p className="text-gray-600 mb-1">
-                        <span className="font-medium">Guests:</span> {booking.guests}
-                      </p>
-                      <p className="text-gray-600 mb-1">
-                        <span className="font-medium">Check-in:</span> {formatDate(booking.checkIn)} ({formatTime(booking.checkIn)})
-                      </p>
-                      <p className="text-gray-600 mb-1">
-                        <span className="font-medium">Check-out:</span> {formatDate(booking.checkOut)} ({formatTime(booking.checkOut)})
-                      </p>
-                      <p className="text-gray-600 mb-4">
-                        <span className="font-medium">Total Amount:</span> ${booking.totalAmount}
-                      </p>
-                      
-                      {/* Action Buttons */}
-                      <div className="flex justify-between mt-4">
-                        <button 
-                          type="button"
-                          onClick={() => handleViewBooking(booking)}
-                          className="bg-blue-50 text-blue-600 py-2 px-4 rounded hover:bg-blue-100 transition duration-300 cursor-pointer"
-                        >
-                          <Eye size={16} className="inline mr-1" /> View Details
-                        </button>
-                        {(bookingFilter === 'upcoming' || bookingFilter === 'current') && (
-                          <button 
-                            type="button"
-                            onClick={() => handleCancelBooking(booking._id)}
-                            className="bg-red-50 text-red-600 py-2 px-4 rounded hover:bg-red-100 transition duration-300 cursor-pointer"
-                          >
-                            <X size={16} className="inline mr-1" /> Cancel Booking
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            {renderBookingContent()}
           </div>
             
         </div>
