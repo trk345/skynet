@@ -88,9 +88,9 @@ function PropertyImageGallery({ images = [] }) {
             {/* Thumbnail Gallery */}
             {images.length > 1 && (
                 <div className="mt-4 flex space-x-2 overflow-x-auto pb-2">
-                    {images.map((image, index) => (
+                    {images.map((imagePath, index) => (
                         <button 
-                            key={index}
+                            key={imagePath}
                             onClick={() => setCurrentImageIndex(index)}
                             className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
                                 index === currentImageIndex 
@@ -99,7 +99,7 @@ function PropertyImageGallery({ images = [] }) {
                             }`}
                         >
                             <img 
-                                src={`${import.meta.env.VITE_API_URL}/${image}`} 
+                                src={`${import.meta.env.VITE_API_URL}/${imagePath}`} 
                                 alt={`Thumbnail ${index + 1}`}
                                 className="w-full h-full object-cover"
                             />
@@ -110,34 +110,35 @@ function PropertyImageGallery({ images = [] }) {
 
             {/* Full Screen Modal */}
             {isModalOpen && (
-            <div 
-                role="dialog"
-                aria-modal="true"
-                aria-label="Image viewer"
-                className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
-                onClick={() => setIsModalOpen(false)}
-                onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                        setIsModalOpen(false);
-                    }
-                }}
-                tabIndex={-1} // Still focusable, but won't show in tab order
-            >
                 <div 
-                    className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center"
-                    onClick={(e) => e.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image viewer"
+                    className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
+                    onClick={() => setIsModalOpen(false)}
                     onKeyDown={(e) => {
-                        if (e.key === "ArrowLeft" && images.length > 1 && currentImageIndex > 0) {
-                            handlePrev();
-                        } else if (e.key === "ArrowRight" && images.length > 1 && currentImageIndex < images.length - 1) {
-                            handleNext();
+                        if (e.key === 'Escape') {
+                            setIsModalOpen(false);
                         }
                     }}
-                    tabIndex={0} // Allows this div to capture key events
+                    tabIndex={-1} // Still focusable, but won't show in tab order
                 >
+                    <button 
+                        className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center bg-transparent border-0"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                            if (e.key === "ArrowLeft" && images.length > 1 && currentImageIndex > 0) {
+                                handlePrev();
+                            } else if (e.key === "ArrowRight" && images.length > 1 && currentImageIndex < images.length - 1) {
+                                handleNext();
+                            }
+                        }}
+                        aria-label="Image container"
+                    >
+                        {/* Your image content would go here */}
+                    
                     {/* Previous Image Button */}
                     {images.length > 1 && currentImageIndex>0 && (
-                        
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -183,7 +184,7 @@ function PropertyImageGallery({ images = [] }) {
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4 text-white bg-black/50 px-4 py-2 rounded-lg">
                         {currentImageIndex + 1} / {images.length}
                     </div>
-                </div>
+                </button>
             </div>
             )}
 
@@ -448,8 +449,7 @@ const PropertyDetails = () => {
     const hasBookings = property.bookedDates && property.bookedDates.length > 0;
 
     const BookedDateItem = ({ date, userId, onUnbook }) => {
-        const isBooker = userId === date.userId;
-      
+        const isBooker = date.userId === userId;
         return (
           <li className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
             <span className="text-gray-900 font-medium">
@@ -457,6 +457,7 @@ const PropertyDetails = () => {
             </span>
             {isBooker && (
               <button
+                type="button"
                 onClick={() => onUnbook(date._id)}
                 className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
               >
@@ -514,8 +515,9 @@ const PropertyDetails = () => {
 
     const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
         <div>
-          <label className="block text-gray-700 mb-2">{label}</label>
+          <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
           <DatePicker
+            id={`${label}-input`}
             selected={selected}
             onChange={onChange}
             minDate={minDate}
@@ -529,10 +531,11 @@ const PropertyDetails = () => {
       
     const GuestInput = ({ value, onChange, max }) => (
         <div>
-          <label className="block text-gray-700 mb-2">Guests</label>
+          <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
           <div className="relative">
             <Users className="absolute top-3 left-3 text-gray-400" size={18} />
             <input
+              id="guests-input"
               type="number"
               min="1"
               max={max}
@@ -586,6 +589,29 @@ const PropertyDetails = () => {
         </p>
     );
 
+    const renderBookingContent = () => {
+        if (canBook || !user) {
+          return (
+            <BookingForm
+              bookingDates={bookingDates}
+              setBookingDates={setBookingDates}
+              handleInputChange={handleInputChange}
+              handleBooking={handleBooking}
+              property={property}
+              user={user}
+            />
+          );
+        }
+      
+        if (user?._id === property?.userID) {
+          return <Message text="You cannot book your own property." isItalic />;
+        }
+      
+        return (
+          <Message text={`This property is currently ${property?.status}`} isError />
+        );
+      };
+      
       
 
     return (
@@ -758,6 +784,7 @@ const PropertyDetails = () => {
                                     ></textarea>
                                     {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
                                     <button
+                                        type="button"
                                         onClick={handleSubmitReview}
                                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
                                     >
@@ -776,7 +803,7 @@ const PropertyDetails = () => {
                         {hasReviews ? (
                         <div className="space-y-6">
                             {property.reviews.map((review, index) => (
-                            <ReviewCard key={index} review={review} />
+                            <ReviewCard key={review._id} review={review} />
                             ))}
                         </div>
                         ) : (
@@ -788,9 +815,10 @@ const PropertyDetails = () => {
                         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Booked Dates</h2>
                             {hasBookings ? (
+                                
                                 <ul className="space-y-4 text-gray-700 text-sm">
                                 {property.bookedDates.map((date, index) => (
-                                    <BookedDateItem key={index} date={date} userId={user?._id} onUnbook={handleUnbook} />
+                                    <BookedDateItem key={date._id} date={date} userId={user?._id} onUnbook={handleUnbook} />
                                 ))}
                                 </ul>
                             ) : (
@@ -805,20 +833,7 @@ const PropertyDetails = () => {
                     <div className="lg:col-span-1">
                         <div className="bg-white shadow-md rounded-lg p-6 sticky top-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Now</h2>
-                            {canBook ? (
-                            <BookingForm
-                                bookingDates={bookingDates}
-                                setBookingDates={setBookingDates}
-                                handleInputChange={handleInputChange}
-                                handleBooking={handleBooking}
-                                property={property}
-                                user={user}
-                            />
-                            ) : user?._id === property?.userID ? (
-                            <Message text="You cannot book your own property." isItalic />
-                            ) : (
-                            <Message text={`This property is currently ${property?.status}`} isError />
-                            )}
+                            {renderBookingContent()}
                         </div>
                     </div>
                 </div>
