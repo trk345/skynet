@@ -8,21 +8,98 @@
 ## Mentor
 - siam456
 
-## Project Description
-Add your project description here.
+# Room Booking and Management System
 
-## Getting Started
-1. Clone the repository
-2. Install dependencies
-3. Start development
+Welcome to the **Room Booking and Management System** — a premium platform designed to seamlessly connect users with the perfect rooms to rent, whether it's a cozy apartment or a luxurious hotel suite. Featuring an intuitive search system, secure authentication, and powerful vendor management capabilities, this platform provides a complete end-to-end solution for room rentals.
 
-## Development Guidelines
-1. Create feature branches
-2. Make small, focused commits
-3. Write descriptive commit messages
-4. Create pull requests for review
+---
 
-## Resources
-- [Project Documentation](docs/)
-- [Development Setup](docs/setup.md)
-- [Contributing Guidelines](CONTRIBUTING.md)
+## ✨ Features
+
+- 🔒 **User Authentication**: Supports both traditional (JWT-based) and Google OAuth authentication.
+- 🏠 **Dynamic Room Search**: Users can filter rooms based on location, room type, check-in/check-out dates, rating, and maximum guests.
+- 📅 **Room Availability Calendar**: Visualize and select available dates effortlessly.
+- 📈 **Vendor and User Dashboards**:
+  - **Users** can manage their bookings and leave reviews.
+  - **Vendors** (upon approval) can create, edit, and manage their properties and view key statistics like active listings, total reviews, and average ratings.
+- 🛠️ **Admin Dashboard**: Manage users, properties, bookings, reviews, and vendor approval requests.
+- 🌟 **Ratings and Reviews**: Users can leave feedback and star ratings for booked properties.
+- 🖼️ **Property Listing**: Rich property cards displaying image galleries, availability status, price, name, location, rating, and number of reviews.
+- 🚀 **Real-Time Updates**: Seamless management and display of updated information across the platform.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React, Vite, TailwindCSS
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
+- **Authentication**: JWT & Google OAuth
+- **Image Uploads**: Multer
+- **Deployment**: Netlify (Frontend) + Render (Backend)
+
+---
+
+## 🚀 Live Demo
+
+Check out the live application here: [skynet1.netlify.app](https://skynet1.netlify.app)
+
+---
+
+## 🛠️ Local Setup Instructions
+
+Follow these steps to run the project locally:
+
+1. **Clone the repository**:
+   ```bash
+   git clone <https://github.com/Learnathon-By-Geeky-Solutions/skynet/>
+   cd <skynet>
+   ```
+
+2. **Install dependencies**:
+   Open two terminals:
+   - For the frontend:
+     ```bash
+     cd frontend
+     npm install
+     ```
+   - For the backend:
+     ```bash
+     cd backend
+     npm install
+     ```
+
+3. **Set up environment variables**:
+   
+   - **Frontend (`frontend/.env`)**:
+     ```
+     VITE_API_URL=<your-backend-api-url>
+     ```
+
+   - **Backend (`backend/.env`)**:
+     ```
+     PORT=<your-port>
+     MONGO_URI=<your-mongodb-connection-string>
+     GOOGLE_CLIENT_ID=<your-google-client-id>
+     GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+     GOOGLE_CLIENT_HOST=<your-google-redirect-uri>
+     GOOGLE_SERVER_HOST=<your-server-host>
+     SESSION_SECRET=<your-session-secret>
+     JWT_SECRET=<your-jwt-secret>
+     CSRF_SECRET=<your-csrf-secret>
+     ```
+
+4. **Run the applications**:
+   - Start the frontend:
+     ```bash
+     npm run dev
+     ```
+   - Start the backend:
+     ```bash
+     npm run dev
+     ```
+
+---
+
+
+# Thank you for visiting! ✨
