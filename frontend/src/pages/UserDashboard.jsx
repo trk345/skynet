@@ -292,7 +292,7 @@ const UserDashboard = () => {
             <div key={property._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
               {/* Property Image/Icon */}
               <div className="bg-gray-100 h-48 flex items-center justify-center">
-                {property.images ? (
+                {(property.images && property.images.length > 0) ? (
                   <img 
                     src={`${import.meta.env.VITE_API_URL}/${property.images[0]}`}
                     alt={property.name}
