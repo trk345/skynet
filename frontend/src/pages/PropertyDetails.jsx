@@ -536,6 +536,7 @@ const PropertyDetails = () => {
             <Users className="absolute top-3 left-3 text-gray-400" size={18} />
             <input
               id="guests-input"
+              name = "guests"
               type="number"
               min="1"
               max={max}
@@ -575,7 +576,7 @@ const PropertyDetails = () => {
           disabled={!isEnabled}
           className={`w-full py-3 rounded-md text-white font-semibold ${
             isEnabled
-              ? 'bg-blue-600 hover:bg-blue-700 transition duration-300'
+              ? 'bg-blue-600 hover:bg-blue-700 transition duration-300 cursor-pointer'
               : 'bg-gray-400 cursor-not-allowed'
           }`}
         >
@@ -786,7 +787,7 @@ const PropertyDetails = () => {
                                     <button
                                         type="button"
                                         onClick={handleSubmitReview}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer"
                                     >
                                         Submit Review
                                     </button>
