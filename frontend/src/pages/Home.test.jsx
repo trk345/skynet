@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import { Home, PropertyImageGallery } from './Home'; 
+import PropTypes from 'prop-types';
 
 // Mock axios
 vi.mock('axios');
@@ -29,15 +30,26 @@ vi.mock('lucide-react', () => ({
 // Mock react-router-dom Link component
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
+  
+  const MockLink = ({ to, children, className }) => (
+    <a href={to} className={className} data-testid="mock-link">
+      {children}
+    </a>
+  );
+
+  // Add PropTypes validation
+  MockLink.propTypes = {
+    to: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string
+  };
+
   return {
     ...actual,
-    Link: ({ to, children, className }) => (
-      <a href={to} className={className} data-testid="mock-link">
-        {children}
-      </a>
-    )
+    Link: MockLink
   };
 });
+
 
 // Mock environment variables for Vite
 beforeEach(() => {

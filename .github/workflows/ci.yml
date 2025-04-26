@@ -1,0 +1,96 @@
+name: CI Pipeline with SonarCloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # Test environment defaults
+  NODE_ENV: test
+  PORT: 4000
+  MONGO_URI: mongodb://localhost:27017/mern_app_test
+  VITE_API_URL: http://localhost:4000
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for SonarCloud analysis
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    # Backend setup
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: npm ci
+
+    - name: Run backend tests
+      working-directory: ./backend
+      env:
+        JWT_SECRET: test-secret
+        SESSION_SECRET: test-secret
+        CSRF_SECRET: test-secret
+      run: npm test
+
+    # Frontend setup
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm test
+
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+
+    # Upload coverage artifacts for SonarCloud
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          backend/coverage/lcov.info
+          frontend/coverage/lcov.info
+
+  sonarcloud:
+    needs: test  # Depends on test job completing first
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download coverage reports
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-reports
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        projectBaseDir: .
+        args: >
+          -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
+          -Dsonar.testExecutionReportPaths=backend/coverage/test-report.xml,frontend/coverage/test-report.xml
+          -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,**/__tests__/**,**/__mocks__/**
+          -Dsonar.javascript.node.maxspace=8192

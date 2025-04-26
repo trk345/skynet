@@ -72,7 +72,7 @@ const updateVendorRequest = async (req, res) => {
     let updateFields = { pendingStatus: "not_pending" };
 
     if (action === "approve") {
-      updateFields.role = "Vendor";
+      updateFields.role = "vendor";
       updateFields.$push = { notifications: { message: "Your vendor request has been approved! 🎉", type: "adminMessage", read: false } };
     } else if (action === "reject") {
       updateFields.$push = { notifications: { message: "Your vendor request has been rejected. ❌", type: "adminMessage", read: false } };

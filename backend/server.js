@@ -104,6 +104,7 @@ passport.use(new GoogleStrategy(
           role: 'user',
           notifications: [],
           approvedVendors: [],
+          pendingStatus: 'not_pending',
         });
       }
       return done(null, user);
@@ -202,13 +203,17 @@ if (!process.env.MONGO_URI) {
 }
 
 // Connect to MongoDB and start server
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`Connected to DB and Listening on PORT:${process.env.PORT}`);
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      app.listen(process.env.PORT, () => {
+        console.log(`Connected to DB and Listening on PORT:${process.env.PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+}
 
+// Export the app for testing purposes
+module.exports = app;
