@@ -294,41 +294,43 @@ const PropertyForm = () => {
   const removeImage = (index, e) => {
     e.preventDefault(); // Prevent form submission
   
-    const updatePropertyImages = () => {
+    // Handle simple case (not edit mode)
+    if (!isEditMode) {
+      // Update property images
       setProperty(prev => ({
         ...prev,
         images: prev.images.filter((_, i) => i !== index),
       }));
-    };
   
-    const updatePreviewList = () => {
+      // Update preview list
       setPreview(prev => {
         const updated = [...prev];
         updated.splice(index, 1);
         return updated;
       });
-    };
-  
-    if (!isEditMode) {
-      updatePropertyImages();
-      updatePreviewList();
       return;
     }
   
+    // Handle edit mode - get the image being removed
+    const removedImage = preview[index];
+    const isStoredImage = removedImage?.stored;
+    
+    // Update property based on image type
+    if (isStoredImage) {
+      setProperty(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+        removedImages: [...(prev.removedImages || []), removedImage.file],
+      }));
+    } else {
+      setProperty(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+    }
+    
+    // Update preview list
     setPreview(prev => {
-      const removedImage = prev[index];
-  
-      // Check if it's a stored image
-      if (removedImage?.stored) {
-        setProperty(prev => ({
-          ...prev,
-          images: prev.images.filter((_, i) => i !== index),
-          removedImages: [...(prev.removedImages || []), removedImage.file],
-        }));
-      } else {
-        updatePropertyImages();
-      }
-  
       const updated = [...prev];
       updated.splice(index, 1);
       return updated;
