@@ -60,9 +60,6 @@ const UserSignup = () => {
 
   return (
     <>
-      <div className="text-2xl font-bold text-blue-600">
-        <Link to="/">Skynet</Link>
-      </div>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md w-96">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Create Account</h2>
@@ -133,6 +130,8 @@ const UserSignup = () => {
           <div className="text-center mt-4">
             <span>Already have an account? </span>
             <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+            <span className="block my-2">- or -</span> {/* Moves to new line */}
+            <Link to="/" className="text-gray-600 hover:underline block">Continue as Guest</Link>
           </div>
         </div>
       </div>
