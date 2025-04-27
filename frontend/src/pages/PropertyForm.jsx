@@ -197,7 +197,7 @@ const PropertyForm = () => {
       isEmpty: (value) => typeof value === 'string' && value.trim().length === 0,
       isMissing: (value) => value === null || value === undefined || validators.isEmpty(value),
       isInvalidEmail: (email) => !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email),
-      isInvalidMobile: (mobile) => !/^\+?[0-9]{10,15}$/.test(mobile),
+      isInvalidMobile: (mobile) => !/^\+?\d{10,15}$/.test(mobile),
       isValidInteger: (value, min = 1) => Number.isInteger(value) && value >= min
     };
   
