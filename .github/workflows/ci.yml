@@ -112,13 +112,13 @@ jobs:
         SONAR_HOST_URL: https://sonarcloud.io
       with:
         args: >
-          -Dsonar.organization=Learnathon-By-Geeky-Solutions
+          -Dsonar.organization=learnathon-By-Geeky-Solutions
           -Dsonar.projectKey=Learnathon-By-Geeky-Solutions_skynet
           -Dsonar.projectName=skynet
           -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
           -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,**/__tests__/**,**/__mocks__/**
           -Dsonar.javascript.node.maxspace=8192
-          -Dsonar.ci.autoconfig.disabled=true
           -Dsonar.sonarcloud.automaticAnalysisDisabled=true
           -Dsonar.analysis.automaticAnalysisConfigurationRun=false
+          -Dsonar.ci.autoconfig.disabled=true
           -Dsonar.qualitygate.wait=true
