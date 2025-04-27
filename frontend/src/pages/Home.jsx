@@ -286,9 +286,9 @@ export const Home = () => {
                     {/* Rating and Reviews */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        {[...Array(5)].map((_, index) => (
+                        {[...Array(5)].map((item, index) => (
                           <svg 
-                            key={`placeholder-${index}`} 
+                            key={item} 
                             className={`w-5 h-5 ${
                               index < Math.floor(property.averageRating || 0) 
                                 ? 'text-yellow-400' 
