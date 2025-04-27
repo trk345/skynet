@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const LoadingScreen = ({ message = "Loading..." }) => (
     <div className="min-h-screen flex justify-center items-center bg-gray-50">
       <div className="text-center">
@@ -6,5 +8,9 @@ const LoadingScreen = ({ message = "Loading..." }) => (
       </div>
     </div>
   );
+
+  LoadingScreen.propTypes = {
+    message: PropTypes.string,
+  }
 
   export default LoadingScreen;
