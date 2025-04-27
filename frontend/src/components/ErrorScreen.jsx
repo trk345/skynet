@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types';
 
 
 const ErrorScreen = ({ message = "Something went wrong...", homeLink = '/' }) => (
@@ -12,5 +13,10 @@ const ErrorScreen = ({ message = "Something went wrong...", homeLink = '/' }) =>
     </div>
 </div>
 );   
+
+ErrorScreen.propTypes = {
+    message: PropTypes.string,
+    homeLink: PropTypes.string,
+  }
 
 export default ErrorScreen;
