@@ -50,8 +50,6 @@ jobs:
         CSRF_SECRET: test-secret
       run: |
         npm test || echo "Tests failed - continuing workflow"
-        # Generate test report if your test runner supports it
-        # For Jest: add --json --outputFile=test-results.json in package.json test script
 
     # Frontend setup
     - name: Install frontend dependencies
@@ -63,7 +61,6 @@ jobs:
       timeout-minutes: 5
       run: |
         npm test || echo "Tests failed - continuing workflow"
-        # Generate test report if your test runner supports it
 
     - name: Build frontend
       working-directory: ./frontend
@@ -92,13 +89,17 @@ jobs:
         name: coverage-reports
 
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: sonarsource/sonarqube-scan-action@v5.0.0
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        projectBaseDir: .
         args: >
+          -Dsonar.organization=Learnathon-By-Geeky-Solutions
+          -Dsonar.projectKey=Learnathon-By-Geeky-Solutions_skynet
+          -Dsonar.projectName=skynet
           -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
           -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,**/__tests__/**,**/__mocks__/**
           -Dsonar.javascript.node.maxspace=8192
+          -Dsonar.ci.autoconfig.disabled=true
+          -Dsonar.qualitygate.wait=true
