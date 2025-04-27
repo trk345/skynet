@@ -40,22 +40,20 @@ Welcome to the **Room Booking and Management System** — a premium platform des
 
 ---
 
-📋 Project Management with Trello
+## 📋 Project Management with Trello
+
 We maintained a clear and organized workflow throughout the project using Trello. Every task — from initial brainstorming to final deployment — was meticulously tracked to ensure smooth collaboration and transparency.
 
-🔗 Trello Board: View our Trello Board
+🔗 **Trello Board**: [View our Trello Board](https://trello.com/invite/b/67aa2e29034f3b4ecd6d085e/ATTIb61d060f8d43f59bca2789210f89d4aeA3B0ADB8/skynetboard)
 
 Our Trello board includes:
-
-📌 Task planning and assignment
-
-✅ Progress tracking (To-Do, In Progress, Done)
-
-🛠️ Bug tracking and feature requests
-
-🗓️ Milestone setting and sprint planning
+- 📌 **Task planning and assignment**
+- ✅ **Progress tracking** (To-Do, In Progress, Done)
+- 🛠️ **Bug tracking and feature requests**
+- 🗓️ **Milestone setting and sprint planning**
 
 Feel free to explore how we managed our project effectively!
+
 
 ## 🚀 Live Demo
 
