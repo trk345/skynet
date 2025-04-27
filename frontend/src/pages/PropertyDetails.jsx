@@ -480,6 +480,7 @@ const PropertyDetails = () => {
 
     BookedDateItem.propTypes = {
         date: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
           checkIn: PropTypes.string.isRequired,
           checkOut: PropTypes.string.isRequired,
           userId: PropTypes.string.isRequired,
@@ -535,23 +536,29 @@ const PropertyDetails = () => {
 
     BookingForm.propTypes = {
         bookingDates: PropTypes.shape({
-          checkIn: PropTypes.instanceOf(Date),
-          checkOut: PropTypes.instanceOf(Date),
+          checkIn: PropTypes.instanceOf(Date).isRequired,
+          checkOut: PropTypes.instanceOf(Date).isRequired,
+          guests: PropTypes.number.isRequired,
         }).isRequired,
         setBookingDates: PropTypes.func.isRequired,
         handleInputChange: PropTypes.func.isRequired,
         handleBooking: PropTypes.func.isRequired,
         property: PropTypes.shape({
           price: PropTypes.number.isRequired,
+          maxGuests: PropTypes.number.isRequired,
           bookedDates: PropTypes.arrayOf(
             PropTypes.shape({
               checkIn: PropTypes.string.isRequired,
               checkOut: PropTypes.string.isRequired,
             })
-          ),
+          ).isRequired,
+          availability: PropTypes.shape({
+            endDate: PropTypes.string.isRequired, // Assuming endDate is a string (ISO format)
+          }).isRequired,
+          status: PropTypes.string.isRequired,
         }).isRequired,
         user: PropTypes.shape({
-          id: PropTypes.string.isRequired,
+          _id: PropTypes.string.isRequired,
           name: PropTypes.string,
           email: PropTypes.string,
         }).isRequired,
@@ -669,6 +676,12 @@ const PropertyDetails = () => {
           {text}
         </p>
     );
+
+    Message.propTypes = {
+        text: PropTypes.string.isRequired,
+        isItalic: PropTypes.bool,
+        isError: PropTypes.bool,
+    }
 
     const renderBookingContent = () => {
         if (canBook || !user) {
