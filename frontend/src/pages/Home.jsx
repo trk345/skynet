@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { School, Search, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { School, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from 'axios';
