@@ -36,7 +36,6 @@ jobs:
           backend/package-lock.json
           frontend/package-lock.json
 
-    # Backend setup
     - name: Install backend dependencies
       working-directory: ./backend
       run: npm ci
@@ -48,10 +47,8 @@ jobs:
         JWT_SECRET: test-secret
         SESSION_SECRET: test-secret
         CSRF_SECRET: test-secret
-      run: |
-        npm test || echo "Tests failed - continuing workflow"
+      run: npm test
 
-    # Frontend setup
     - name: Install frontend dependencies
       working-directory: ./frontend
       run: npm ci
@@ -59,14 +56,12 @@ jobs:
     - name: Run frontend tests
       working-directory: ./frontend
       timeout-minutes: 5
-      run: |
-        npm test || echo "Tests failed - continuing workflow"
+      run: npm test
 
     - name: Build frontend
       working-directory: ./frontend
       run: npm run build
 
-    # Upload coverage artifacts
     - name: Archive coverage reports
       uses: actions/upload-artifact@v4
       with:
@@ -88,6 +83,12 @@ jobs:
       with:
         name: coverage-reports
 
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
     - name: SonarCloud Scan
       uses: sonarsource/sonarqube-scan-action@v5.0.0
       env:
@@ -100,6 +101,7 @@ jobs:
           -Dsonar.projectName=skynet
           -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
           -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,**/__tests__/**,**/__mocks__/**
-          -Dsonar.javascript.node.maxspace=8192
           -Dsonar.ci.autoconfig.disabled=true
           -Dsonar.qualitygate.wait=true
+          -Dsonar.ci.disable=true
+          -Dsonar.scm.disabled=true
