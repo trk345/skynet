@@ -109,6 +109,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_HOST_URL: https://sonarcloud.io
       with:
         args: >
           -Dsonar.organization=Learnathon-By-Geeky-Solutions
@@ -119,4 +120,5 @@ jobs:
           -Dsonar.javascript.node.maxspace=8192
           -Dsonar.ci.autoconfig.disabled=true
           -Dsonar.sonarcloud.automaticAnalysisDisabled=true
+          -Dsonar.analysis.automaticAnalysisConfigurationRun=false
           -Dsonar.qualitygate.wait=true
