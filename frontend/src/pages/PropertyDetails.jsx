@@ -389,7 +389,7 @@ const PropertyDetails = () => {
     );
     };
 
-    if (loading) return <LoadingScreen message="loading Property Details..." />;
+    if (loading) return <LoadingScreen message="Loading Property Details..." />;
     if (error) return <ErrorScreen message={error} />;
     if (!property) return null;
 
@@ -445,7 +445,17 @@ const PropertyDetails = () => {
           <p className="text-gray-600 mt-2">{review.comment}</p>
         </div>
       );
-
+    
+    ReviewCard.propTypes = {
+        review: PropTypes.shape({
+          userId: PropTypes.string.isRequired, 
+          username: PropTypes.string.isRequired, 
+          rating: PropTypes.number.isRequired, 
+          comment: PropTypes.string.isRequired,
+          createdAt: PropTypes.string.isRequired, 
+        }).isRequired, 
+    };
+    
     const hasBookings = property.bookedDates && property.bookedDates.length > 0;
 
     const BookedDateItem = ({ date, userId, onUnbook }) => {
@@ -467,6 +477,16 @@ const PropertyDetails = () => {
           </li>
         );
       };
+
+    BookedDateItem.propTypes = {
+        date: PropTypes.shape({
+          checkIn: PropTypes.string.isRequired,
+          checkOut: PropTypes.string.isRequired,
+          userId: PropTypes.string.isRequired,
+        }).isRequired,
+        userId: PropTypes.string.isRequired,
+        onUnbook: PropTypes.func.isRequired,
+    };
 
     const canBook = user && property?.status === 'available' && user._id !== property?.userID;
 
@@ -513,6 +533,30 @@ const PropertyDetails = () => {
         );
     };
 
+    BookingForm.propTypes = {
+        bookingDates: PropTypes.shape({
+          checkIn: PropTypes.instanceOf(Date),
+          checkOut: PropTypes.instanceOf(Date),
+        }).isRequired,
+        setBookingDates: PropTypes.func.isRequired,
+        handleInputChange: PropTypes.func.isRequired,
+        handleBooking: PropTypes.func.isRequired,
+        property: PropTypes.shape({
+          price: PropTypes.number.isRequired,
+          bookedDates: PropTypes.arrayOf(
+            PropTypes.shape({
+              checkIn: PropTypes.string.isRequired,
+              checkOut: PropTypes.string.isRequired,
+            })
+          ),
+        }).isRequired,
+        user: PropTypes.shape({
+          id: PropTypes.string.isRequired,
+          name: PropTypes.string,
+          email: PropTypes.string,
+        }).isRequired,
+    };
+
     const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
         <div>
           <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
@@ -528,6 +572,20 @@ const PropertyDetails = () => {
           />
         </div>
     );
+
+    DateInput.propTypes = {
+        label: PropTypes.string.isRequired,
+        selected: PropTypes.instanceOf(Date), // Date object
+        onChange: PropTypes.func.isRequired,
+        minDate: PropTypes.instanceOf(Date), 
+        maxDate: PropTypes.instanceOf(Date), 
+        excludeIntervals: PropTypes.arrayOf(
+          PropTypes.shape({
+            start: PropTypes.instanceOf(Date),
+            end: PropTypes.instanceOf(Date),
+          })
+        ),
+    };
       
     const GuestInput = ({ value, onChange, max }) => (
         <div>
@@ -547,6 +605,12 @@ const PropertyDetails = () => {
           </div>
         </div>
     );
+
+    GuestInput.propTypes = {
+        value: PropTypes.number.isRequired,
+        onChange: PropTypes.func.isRequired,
+        max: PropTypes.number.isRequired,
+    };
         
     const PriceSummary = ({ price, nights, total }) => (
         <div className="pt-4 border-t border-gray-200">
@@ -569,6 +633,12 @@ const PropertyDetails = () => {
         </div>
     );
 
+    PriceSummary.propTypes = {
+        price: PropTypes.number.isRequired,
+        nights: PropTypes.number.isRequired,
+        total: PropTypes.number.isRequired,
+      };
+    
     const BookButton = ({ isEnabled, onClick, user }) => (
         <button
           type="button"
@@ -583,6 +653,16 @@ const PropertyDetails = () => {
           {user ? 'Book Now' : 'Please log in to book'}
         </button>
     );
+
+    BookButton.propTypes = {
+        isEnabled: PropTypes.bool.isRequired,
+        onClick: PropTypes.func.isRequired,
+        user: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+          name: PropTypes.string,
+          email: PropTypes.string,
+        }), // Optional user object
+    };
 
     const Message = ({ text, isItalic = false, isError = false }) => (
         <p className={`text-sm mt-2 text-center ${isItalic ? 'italic text-gray-600' : ''} ${isError ? 'text-red-500' : ''}`}>
