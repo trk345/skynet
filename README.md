@@ -34,7 +34,7 @@ Welcome to the **Room Booking and Management System** — a premium platform des
 - **Frontend**: React, Vite, TailwindCSS
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
-- **Authentication**: JWT & Google OAuth
+- **Authentication**: JWT, Cookies & Google OAuth
 - **Image Uploads**: Multer
 - **Deployment**: Netlify (Frontend) + Render (Backend)
 
@@ -45,6 +45,11 @@ Welcome to the **Room Booking and Management System** — a premium platform des
 Check out the live application here: [skynet1.netlify.app](https://skynet1.netlify.app)
 
 ---
+
+# TRELLO Work Management Board
+
+Checkout our commitment and dedication to maintaining and recording all our productions steps using Trello.
+Trello board Link: https://trello.com/invite/b/67aa2e29034f3b4ecd6d085e/ATTIb61d060f8d43f59bca2789210f89d4aeA3B0ADB8/skynetboard
 
 ## 🛠️ Local Setup Instructions
 
