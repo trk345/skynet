@@ -6,12 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  NODE_ENV: test
-  PORT: 4000
-  MONGO_URI: mongodb://localhost:27017/mern_app_test
-  VITE_API_URL: http://localhost:4000
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -45,9 +39,16 @@ jobs:
       working-directory: ./backend
       timeout-minutes: 5
       env:
-        JWT_SECRET: test-secret
-        SESSION_SECRET: test-secret
-        CSRF_SECRET: test-secret
+        NODE_ENV: test
+        PORT: 4000
+        MONGO_URI: mongodb://localhost:27017/mern_app_test
+        GOOGLE_CLIENT_ID: mock-client-id-for-testing
+        GOOGLE_CLIENT_SECRET: mock-client-secret-for-testing
+        GOOGLE_CLIENT_HOST: http://localhost:5173
+        GOOGLE_SERVER_HOST: http://localhost:4000
+        SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'test-session-secret' }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-jwt-secret' }}
+        CSRF_SECRET: ${{ secrets.CSRF_SECRET || 'test-csrf-secret' }}
       run: npm test
 
     # Frontend setup
@@ -58,10 +59,14 @@ jobs:
     - name: Run frontend tests
       working-directory: ./frontend
       timeout-minutes: 5
+      env:
+        VITE_API_URL: http://localhost:4000
       run: npm test
 
     - name: Build frontend
       working-directory: ./frontend
+      env:
+        VITE_API_URL: http://localhost:4000
       run: npm run build
 
     # Upload coverage artifacts

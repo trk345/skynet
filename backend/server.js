@@ -86,34 +86,41 @@ function createJWT(user) {
 }
 
 // Google OAuth Strategy
-passport.use(new GoogleStrategy(
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.GOOGLE_SERVER_HOST}/auth/google/callback`,
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await User.findOne({ googleId: profile.id });
-      if (!user) {
-        user = await User.create({
-          googleId: profile.id,
-          username: profile.displayName,
-          email: profile.emails[0].value,
-          lastLogin: new Date(),
-          role: 'user',
-          notifications: [],
-          approvedVendors: [],
-          pendingStatus: 'not_pending',
-        });
+if (
+  process.env.NODE_ENV !== 'test' || 
+  (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+) {
+  passport.use(new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.GOOGLE_SERVER_HOST}/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value,
+            lastLogin: new Date(),
+            role: 'user',
+            notifications: [],
+            approvedVendors: [],
+            pendingStatus: 'not_pending',
+          });
+        }
+        return done(null, user);
+      } catch (err) {
+        console.error('Error during Google OAuth:', err);
+        return done(err, null);
       }
-      return done(null, user);
-    } catch (err) {
-      console.error('Error during Google OAuth:', err);
-      return done(err, null);
     }
-  }
-));
+  ));
+} else {
+  console.log('Google OAuth setup skipped in test environment');
+}
 
 // Serialize and deserialize the user
 passport.serializeUser((user, done) => done(null, user.googleId));  // Serialize using googleId
