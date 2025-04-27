@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { School, MapPin, Users, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const PropertyImageGallery = ({ images = [] }) => {
+export const PropertyImageGallery = ({ images = [] }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // If no images, return default icon
@@ -86,7 +86,7 @@ const PropertyImageGallery = ({ images = [] }) => {
 };
 
 
-const Home = () => {
+export const Home = () => {
   const [searchParams, setSearchParams] = useState({
     type: '',
     location: '',
@@ -103,23 +103,6 @@ const Home = () => {
       ...prev,
       [name]: value
     }));
-  };
-  const handleSearch = async () => {
-    try {
-      // Send the search parameters to the backend
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/getProperties`, {
-        withCredentials: true,
-        params: { ...searchParams } // send all search params
-      });
-  
-      if (response.data.success) {
-        setProperties(response.data.data); // Set the filtered properties
-      } else {
-        console.log("Failed to fetch properties:", response.data.error);
-      }
-    } catch (error) {
-      console.log("Error fetching properties:", error);
-    }
   };
 
   const [properties, setProperties] = useState([]);
@@ -232,13 +215,6 @@ const Home = () => {
             />
           </div>
 
-          {/* Search Button */}
-          <button type="button"
-            onClick={handleSearch}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
-          >
-            <Search className="inline-block mr-2" size={20} /> Search Rooms
-          </button>
         </div>
       </div>
           
@@ -285,9 +261,15 @@ const Home = () => {
                       </span>
                     </div>
 
-                    <span className="truncate max-w-[150px] block" title={property.type}>
-                      {property.type || 'Unknown Type'}
-                    </span>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <School className="mr-2 text-blue-500" size={20} />
+                      <span
+                        className="truncate max-w-[200px]"
+                        title={property.type || 'Unknown Type'}
+                      >
+                        {property.type || 'Unknown Type'}
+                      </span>
+                    </div>
                     
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="mr-2 text-blue-500" size={20} />
@@ -304,9 +286,9 @@ const Home = () => {
                     {/* Rating and Reviews */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        {[...Array(5)].map((_, index) => (
+                        {[...Array(5)].map((item, index) => (
                           <svg 
-                            key={index} 
+                            key={item} 
                             className={`w-5 h-5 ${
                               index < Math.floor(property.averageRating || 0) 
                                 ? 'text-yellow-400' 
@@ -362,18 +344,6 @@ const Home = () => {
             ))}
           </div>
         )}
-          
-          {/* View All Properties Button
-          {properties.length > 0 && (
-            <div className="text-center mt-12">
-              <Link 
-                to="/properties" 
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-300 inline-block"
-              >
-                View All Properties
-              </Link>
-            </div>
-          )} */}
         </section>    
 
     </div>
@@ -386,5 +356,3 @@ const Home = () => {
 PropertyImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
 };
-
-export default Home;

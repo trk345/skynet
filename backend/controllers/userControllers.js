@@ -16,6 +16,7 @@ const verifyUser = (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         return decoded.userId;
     } catch (error) {
+        console.error("JWT verification error:", error);
         return res.status(401).json({ error: 'Unauthorized' });
     }
 };
@@ -99,7 +100,8 @@ const getNotifs = async (req, res) => {
   
       res.json(sortedNotifications);
     } catch (error) {
-      res.status(500).json({ error: 'Server error' });
+        console.error("Error fetching notifications:", error);  
+        res.status(500).json({ error: 'Server error when fetching notifications' });
     }
   };
   
@@ -120,7 +122,8 @@ const putReadNotifs = async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        console.error("Error marking notifications as read:", error);
+        res.status(500).json({ error: 'Server error when marking notifications as read' });
     }
 };
 
@@ -379,7 +382,7 @@ const getBookings = async (req, res) => {
         if (!bookings) return res.status(404).json({ message: "No bookings found" });
         res.status(200).json({ success: true, data: bookings});
     } catch (error) {
-        console.log("Error fetching bookings:", error);
+        console.error("Error fetching bookings:", error);
         res.status(500).json({ success: false, message: "Could not fetch bookings in server" });
     }
 }

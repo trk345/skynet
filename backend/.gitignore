@@ -1,8 +1,11 @@
 # Build and Release Folders
 bin-debug/
 bin-release/
-[Oo]bj/
 [Bb]in/
+[Oo]bj/
+
+# Coverage
+coverage/
 
 # Other files and folders
 .settings/
@@ -28,8 +31,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Dependency directories
-package-lock.json
+# Dependency lock files (recommended to KEEP one of these, e.g., package-lock.json)
+# Remove this line if you want to commit lock file for consistent installs:
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
@@ -49,5 +53,4 @@ Thumbs.db
 *.iml
 
 # Others
-.settings/
 tmp/

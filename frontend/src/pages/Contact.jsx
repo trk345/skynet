@@ -69,6 +69,16 @@ const Contact = () => {
     }
   };
 
+  const getSectionClasses = (sectionName) => {
+    if (activeSection !== sectionName) {
+      return 'hidden';
+    }
+    
+    return isLoaded 
+      ? 'translate-y-0 opacity-100 block'
+      : 'translate-y-10 opacity-0 block';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <Navbar />
@@ -101,15 +111,7 @@ const Contact = () => {
         </div>
         
         {/* Welcome Section */}
-        <div 
-          className={`transform transition-all duration-700 ${
-            isLoaded && activeSection === 'welcome' 
-              ? 'translate-y-0 opacity-100 block' 
-              : activeSection === 'welcome' 
-                ? 'translate-y-10 opacity-0 block' 
-                : 'hidden'
-          }`}
-        >
+        <div className={`transform transition-all duration-700 ${getSectionClasses('welcome')}`}>
           <div className="text-center mb-16">
             <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">
               Welcome to <span className="text-blue-600">Skynet</span>
@@ -168,15 +170,7 @@ const Contact = () => {
         </div>
         
         {/* Contact Section */}
-        <div 
-          className={`transform transition-all duration-700 ${
-            isLoaded && activeSection === 'contact' 
-              ? 'translate-y-0 opacity-100 block' 
-              : activeSection === 'contact' 
-                ? 'translate-y-10 opacity-0 block' 
-                : 'hidden'
-          }`}
-        >
+        <div className={`transform transition-all duration-700 ${getSectionClasses('contact')}`}>
           <div className="text-center mb-16">
             <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">Get In Touch</h1>
             <div className="w-24 h-1 bg-blue-600 mx-auto mb-8 rounded-full"></div>
@@ -248,16 +242,11 @@ const Contact = () => {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl shadow-xl p-10">
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      {/* {showVendorForm ? 'Vendor Application' : 'Send a Message'} */}
-                    </h2>
-                    
                     {activeSection === 'contact' && (
                       <button 
                         onClick={() => setShowVendorForm(!showVendorForm)}
                         className="text-blue-600 hover:text-blue-800 transition-colors duration-300 flex items-center"
                       >
-                        {/* <span>{showVendorForm ? 'Send a general message instead' : 'Apply as a vendor'}</span> */}
                       </button>
                     )}
                   </div>
@@ -376,7 +365,6 @@ const Contact = () => {
                           onChange={handleInputChange}
                           rows="5"
                           className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        //   placeholder={showVendorForm ? "Tell us about your property and business..." : "How can we help you?"}
                           placeholder={"Tell us about your property and business..."}
                           required
                         ></textarea>
@@ -389,7 +377,6 @@ const Contact = () => {
                         className="bg-blue-600 text-white py-4 px-10 rounded-full hover:bg-blue-700 transition duration-300 flex items-center text-lg font-medium shadow-lg hover:shadow-xl cursor-pointer"
                       >
                         <Send className="mr-2" size={20} />
-                        {/* {showVendorForm ? 'Submit Application' : 'Send Message'} */}
                         Submit Application
                       </button>
                     </div>

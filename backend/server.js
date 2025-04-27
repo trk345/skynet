@@ -86,33 +86,41 @@ function createJWT(user) {
 }
 
 // Google OAuth Strategy
-passport.use(new GoogleStrategy(
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `http://localhost:${process.env.PORT}/auth/google/callback`,
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await User.findOne({ googleId: profile.id });
-      if (!user) {
-        user = await User.create({
-          googleId: profile.id,
-          username: profile.displayName,
-          email: profile.emails[0].value,
-          lastLogin: new Date(),
-          role: 'user',
-          notifications: [],
-          approvedVendors: [],
-        });
+if (
+  process.env.NODE_ENV !== 'test' || 
+  (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+) {
+  passport.use(new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.GOOGLE_SERVER_HOST}/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value,
+            lastLogin: new Date(),
+            role: 'user',
+            notifications: [],
+            approvedVendors: [],
+            pendingStatus: 'not_pending',
+          });
+        }
+        return done(null, user);
+      } catch (err) {
+        console.error('Error during Google OAuth:', err);
+        return done(err, null);
       }
-      return done(null, user);
-    } catch (err) {
-      console.error('Error during Google OAuth:', err);
-      return done(err, null);
     }
-  }
-));
+  ));
+} else {
+  console.log('Google OAuth setup skipped in test environment');
+}
 
 // Serialize and deserialize the user
 passport.serializeUser((user, done) => done(null, user.googleId));  // Serialize using googleId
@@ -135,7 +143,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login", session: false }),
   async (req, res) => {
     if (!req.user) {
-      return res.redirect("http://localhost:5173/login?error=GoogleAuthFailed");
+      return res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/login?error=GoogleAuthFailed`);
     }
 
     try {
@@ -154,10 +162,10 @@ app.get(
       });
 
       // Redirect to frontend
-      res.redirect("http://localhost:5173/auth-success");
+      res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/auth-success`);
     } catch (error) {
       console.error("Error updating lastLogin:", error);
-      res.redirect("http://localhost:5173/login?error=ServerError");
+      res.redirect(`${process.env.GOOGLE_CLIENT_HOST}/login?error=ServerError`);
     }
   }
 );
@@ -196,27 +204,23 @@ app.use('/api/admin', authenticateJWT, adminRoutes); // Protected
 app.use('/api/user', authenticateJWT, userRoutes);  // Protected
 app.use('/api/vendor', authenticateJWT, vendorRoutes); // Protected
 
-// // Serve static files
-// app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
-
-// // Catch-all route for React
-// app.get('*', limiter, (req, res) => {
-//   res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
-// });
-
 if (!process.env.MONGO_URI) {
   console.error("❌ MONGO_URI is missing in .env file!");
   process.exit(1); // Exit with failure
 }
 
 // Connect to MongoDB and start server
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`Connected to DB and Listening on PORT:${process.env.PORT}`);
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      app.listen(process.env.PORT, () => {
+        console.log(`Connected to DB and Listening on PORT:${process.env.PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+}
 
+// Export the app for testing purposes
+module.exports = app;

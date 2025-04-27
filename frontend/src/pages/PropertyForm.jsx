@@ -38,6 +38,7 @@ const PropertyForm = () => {
     email: '',
     images: []
   });
+  const [tempProperty, setTempProperty] = useState({});
 
   const [preview, setPreview] = useState([]);
 
@@ -53,7 +54,10 @@ const PropertyForm = () => {
             if (response.data.success) {
               const fetchedProperty = response.data.data;
               fetchedProperty.squareFeet = fetchedProperty.squareFeet == "null" ? "" : fetchedProperty.squareFeet;
+              fetchedProperty.availability.startDate = fetchedProperty.availability.startDate == null ? "" : fetchedProperty.availability.startDate;
+              fetchedProperty.availability.endDate = fetchedProperty.availability.endDate == null ? "" : fetchedProperty.availability.endDate;
               setProperty(fetchedProperty)
+              setTempProperty(fetchedProperty);
 
               // Convert stored images into preview format
               const storedImages = Array.isArray(response.data.data.images) // Check if property had images
@@ -188,37 +192,75 @@ const PropertyForm = () => {
 
   // Validate the form
   const validateForm = () => {
-    const newErrors = {};
+    // Extract validation helpers
+    const validators = {
+      isEmpty: (value) => typeof value === 'string' && value.trim().length === 0,
+      isMissing: (value) => value === null || value === undefined || validators.isEmpty(value),
+      isInvalidEmail: (email) => !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email),
+      isInvalidMobile: (mobile) => !/^\+?\d{10,15}$/.test(mobile),
+      isValidInteger: (value, min = 1) => Number.isInteger(value) && value >= min
+    };
+  
+    // Initialize errors object
+    const errors = {};
     
-    // Required field validation
-    if (!property.name.trim()) newErrors.name = "Property name is required";
-    if (!property.description.trim()) newErrors.description = "Description is required";
-    if (!property.location.trim()) newErrors.location = "Location is required";
-    if (!property.address.trim()) newErrors.address = "Address is required";
-    if (!property.price) newErrors.price = "Price is required";
-    // if (property.price && property.price <= 0) newErrors.price = "Valid Price required";
-    if (!property.bedrooms) newErrors.bedrooms = "Bedrooms must be at least 1";
-    if (!property.bathrooms) newErrors.bathrooms = "This field is required";
-    if (!property.maxGuests || property.maxGuests < 1) newErrors.maxGuests = "Max guests must be at least 1";
-    if (!property.mobile) newErrors.mobile = "Mobile is required";
-    if (property.mobile && !/^\+?[0-9]{10,15}$/.test(property.mobile)) { newErrors.mobile = "Invalid mobile number";}
-    if (!property.email) newErrors.email = "Email is required";
-    if (property.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(property.email)) {
-      newErrors.email = "Invalid email address";
+    // Validate required text fields
+    const requiredFields = [
+      { key: 'name', message: 'Property name is required' },
+      { key: 'description', message: 'Description is required' },
+      { key: 'location', message: 'Location is required' },
+      { key: 'address', message: 'Address is required' },
+      { key: 'mobile', message: 'Mobile is required' },
+      { key: 'email', message: 'Email is required' },
+    ];
+    
+    requiredFields.forEach(({ key, message }) => {
+      if (validators.isMissing(property[key])) {
+        errors[key] = message;
+      }
+    });
+    
+    // Validate numeric fields
+    const numericValidations = [
+      { key: 'price', condition: property.price === null || property.price === undefined, message: 'Price is required' },
+      { key: 'bedrooms', condition: !validators.isValidInteger(property.bedrooms), message: 'Bedrooms must be at least 1' },
+      { key: 'bathrooms', condition: !validators.isValidInteger(property.bathrooms), message: 'This field is required' },
+      { key: 'maxGuests', condition: !validators.isValidInteger(property.maxGuests), message: 'Max guests must be at least 1' }
+    ];
+    
+    numericValidations.forEach(({ key, condition, message }) => {
+      if (condition) {
+        errors[key] = message;
+      }
+    });
+    
+    // Validate format fields
+    if (property.mobile && validators.isInvalidMobile(property.mobile)) {
+      errors.mobile = "Invalid mobile number";
     }
     
-
-    // Date validation if dates are provided
-    if (property.availability.startDate && property.availability.endDate) {
-      const start = new Date(property.availability.startDate);
-      const end = new Date(property.availability.endDate);
+    if (property.email && validators.isInvalidEmail(property.email)) {
+      errors.email = "Invalid email address";
+    }
+    
+    // Validate date range
+    validateDateRange(property, errors);
+    
+    return errors;
+  };
+  
+  // Extracted date validation to a separate function
+  const validateDateRange = (property, errors) => {
+    const { startDate, endDate } = property.availability || {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
       if (end < start) {
-        newErrors.endDate = "End date cannot be before start date";
+        errors.endDate = "End date cannot be before start date";
       }
     }
-    
-    return newErrors;
   };
+  
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -251,35 +293,50 @@ const PropertyForm = () => {
   
   const removeImage = (index, e) => {
     e.preventDefault(); // Prevent form submission
+  
+    // Handle simple case (not edit mode)
     if (!isEditMode) {
-      setProperty(prevProperty => ({...prevProperty, images: prevProperty.images.filter((_, i) => i !== index)}));
-      setPreview(prev => prev.filter((_, i) => i !== index));
-    } else {
-        setPreview((prev) => {
-          const updatedPreview = [...prev];
-          const removedImage = updatedPreview[index]; // Get the removed image
-      
-          // Check if it's a stored image
-          if (removedImage.stored) {
-            setProperty((prevProperty) => ({
-              ...prevProperty,
-              images: prevProperty.images.filter((_, i) => i !== index),
-              removedImages: [...(prevProperty.removedImages || []), removedImage.file], // Store removed DB images to later remove from server
-            }))
-            console.log("Removed Images: ", property.removedImages);
-          } else {
-            setProperty((prevProperty) => ({
-              ...prevProperty,
-              images: prevProperty.images.filter((_, i) => i !== index),
-            }));
-          }
-      
-          // Remove from the preview list
-          updatedPreview.splice(index, 1);
-          return updatedPreview;
-        });
+      // Update property images
+      setProperty(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+  
+      // Update preview list
+      setPreview(prev => {
+        const updated = [...prev];
+        updated.splice(index, 1);
+        return updated;
+      });
+      return;
     }
-  }
+  
+    // Handle edit mode - get the image being removed
+    const removedImage = preview[index];
+    const isStoredImage = removedImage?.stored;
+    
+    // Update property based on image type
+    if (isStoredImage) {
+      setProperty(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+        removedImages: [...(prev.removedImages || []), removedImage.file],
+      }));
+    } else {
+      setProperty(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+    }
+    
+    // Update preview list
+    setPreview(prev => {
+      const updated = [...prev];
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -396,6 +453,14 @@ const PropertyForm = () => {
     return errors[fieldName];
   };
 
+  // Helper function to rendor error message
+  const inputClass = (fieldName, hasIcon=false) => 
+      `w-full ${hasIcon ? 'pl-10 pr-3' : 'px-4'} py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          hasError(fieldName) ? 'border-red-500' : 'border-gray-300'
+        }`
+      
+  
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -425,9 +490,7 @@ const PropertyForm = () => {
                     maxLength = {15}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      hasError('name') ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={inputClass("name")}
                     placeholder="Enter property name"
                   />
                 </div>
@@ -462,9 +525,7 @@ const PropertyForm = () => {
                     onChange={handleInputChange}
                     required
                     rows="4"
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      hasError('description') ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={inputClass("description")}
                     placeholder="Describe your property"
                   ></textarea>
                 </div>
@@ -492,9 +553,7 @@ const PropertyForm = () => {
                       maxLength={25}
                       onChange={handleInputChange}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('location') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("location", true)}
                       placeholder="e.g., New York, Miami"
                     />
                   </div>
@@ -516,9 +575,7 @@ const PropertyForm = () => {
                         value={property.address}
                         onChange={handleInputChange}
                         required
-                        className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('address') ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={inputClass("address", true)}
                         placeholder="Full street address"
                     />
                   </div>
@@ -547,9 +604,7 @@ const PropertyForm = () => {
                       value={property.price}
                       onChange={handleDecimalInput}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('price') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("price", true)}
                       placeholder="99.99"
                     />
                   </div>
@@ -571,9 +626,7 @@ const PropertyForm = () => {
                       value={property.bedrooms}
                       onChange={handleNumberInput}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('bedrooms') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("bedrooms", true)}
                     />
                   </div>
                 </div>
@@ -594,9 +647,7 @@ const PropertyForm = () => {
                       value={property.bathrooms}
                       onChange={handleNumberInput}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('bathrooms') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("bathrooms", true)}
                     />
                   </div>
                 </div>
@@ -633,9 +684,7 @@ const PropertyForm = () => {
                         value={property.maxGuests}
                         onChange={handleNumberInput}
                         required
-                        className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('maxGuests') ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={inputClass("maxGuests", true)}
                     />
                   </div>
                 </div>
@@ -703,9 +752,7 @@ const PropertyForm = () => {
                       : new Date().toISOString().split('T')[0]  // fallback to today if no start date
                     } 
                     onChange={handleAvailabilityChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      hasError('endDate') ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={inputClass("endDate")}
                   />
                 </div>
               </div>
@@ -731,9 +778,7 @@ const PropertyForm = () => {
                       value={property.mobile}
                       onChange={handleMobileInput}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('mobile') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("mobile", true)}
                       placeholder="e.g. +880 1234567899"
                     />
                   </div>
@@ -755,9 +800,7 @@ const PropertyForm = () => {
                       value={property.email}
                       onChange={handleInputChange}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        hasError('email') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={inputClass("email", true)}
                     />
                   </div>
                 </div>
@@ -791,7 +834,7 @@ const PropertyForm = () => {
             {/* Preview of Selected Images */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {preview.map((image, index) => (
-                <div key={index} className="relative group">
+                <div key={image.preview} className="relative group">
                   <img
                     src={image.preview}
                     alt={`preview-${index}`}
@@ -813,12 +856,17 @@ const PropertyForm = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 cursor-pointer flex items-center"
+                disabled={JSON.stringify(tempProperty) === JSON.stringify(property)}
+                className={`px-6 py-3 rounded-md flex items-center transition duration-300 
+                  ${JSON.stringify(tempProperty) === JSON.stringify(property) 
+                    ? 'bg-gray-400 text-white' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'}`}
               >
                 <Save className="mr-2" size={20} />
                 {isEditMode ? "Save Changes" : "Create Property"}
               </button>
             </div>
+
           </form>
         </div>
       </div>

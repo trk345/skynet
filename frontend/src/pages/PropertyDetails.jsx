@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from 'axios';
 import { X, ChevronLeft, ChevronRight, Maximize2, MapPin, Users, Wifi, Car, Coffee, Wind, Thermometer, Tv, ChefHat, Briefcase, Star, Phone, Mail } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+import LoadingScreen from "../components/LoadingScreen.jsx";
+import ErrorScreen from "../components/ErrorScreen.jsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from 'prop-types';
@@ -86,9 +88,9 @@ function PropertyImageGallery({ images = [] }) {
             {/* Thumbnail Gallery */}
             {images.length > 1 && (
                 <div className="mt-4 flex space-x-2 overflow-x-auto pb-2">
-                    {images.map((image, index) => (
+                    {images.map((imagePath, index) => (
                         <button 
-                            key={index}
+                            key={imagePath}
                             onClick={() => setCurrentImageIndex(index)}
                             className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${
                                 index === currentImageIndex 
@@ -97,7 +99,7 @@ function PropertyImageGallery({ images = [] }) {
                             }`}
                         >
                             <img 
-                                src={`${import.meta.env.VITE_API_URL}/${image}`} 
+                                src={`${import.meta.env.VITE_API_URL}/${imagePath}`} 
                                 alt={`Thumbnail ${index + 1}`}
                                 className="w-full h-full object-cover"
                             />
@@ -108,34 +110,35 @@ function PropertyImageGallery({ images = [] }) {
 
             {/* Full Screen Modal */}
             {isModalOpen && (
-            <div 
-                role="dialog"
-                aria-modal="true"
-                aria-label="Image viewer"
-                className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
-                onClick={() => setIsModalOpen(false)}
-                onKeyDown={(e) => {
-                    if (e.key === 'Escape') {
-                        setIsModalOpen(false);
-                    }
-                }}
-                tabIndex={-1} // Still focusable, but won't show in tab order
-            >
                 <div 
-                    className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center"
-                    onClick={(e) => e.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image viewer"
+                    className="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center p-8"
+                    onClick={() => setIsModalOpen(false)}
                     onKeyDown={(e) => {
-                        if (e.key === "ArrowLeft" && images.length > 1 && currentImageIndex > 0) {
-                            handlePrev();
-                        } else if (e.key === "ArrowRight" && images.length > 1 && currentImageIndex < images.length - 1) {
-                            handleNext();
+                        if (e.key === 'Escape') {
+                            setIsModalOpen(false);
                         }
                     }}
-                    tabIndex={0} // Allows this div to capture key events
+                    tabIndex={-1} // Still focusable, but won't show in tab order
                 >
+                    <button 
+                        className="relative w-[90%] h-[90%] max-w-[1200px] flex items-center justify-center bg-transparent border-0"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                            if (e.key === "ArrowLeft" && images.length > 1 && currentImageIndex > 0) {
+                                handlePrev();
+                            } else if (e.key === "ArrowRight" && images.length > 1 && currentImageIndex < images.length - 1) {
+                                handleNext();
+                            }
+                        }}
+                        aria-label="Image container"
+                    >
+                        {/* Your image content would go here */}
+                    
                     {/* Previous Image Button */}
                     {images.length > 1 && currentImageIndex>0 && (
-                        
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -181,7 +184,7 @@ function PropertyImageGallery({ images = [] }) {
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mb-4 text-white bg-black/50 px-4 py-2 rounded-lg">
                         {currentImageIndex + 1} / {images.length}
                     </div>
-                </div>
+                </button>
             </div>
             )}
 
@@ -386,27 +389,8 @@ const PropertyDetails = () => {
     );
     };
 
-    if (loading) return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-50">
-            <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading property details...</p>
-            </div>
-        </div>
-    );
-
-    if (error) return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-50">
-            <div className="text-center text-red-600 p-6 bg-white shadow-md rounded-lg">
-                <h2 className="text-xl font-bold mb-2">Error</h2>
-                <p>{error}</p>
-                <Link to="/" className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Return to Home
-                </Link>
-            </div>
-        </div>
-    );
-
+    if (loading) return <LoadingScreen message="Loading Property Details..." />;
+    if (error) return <ErrorScreen message={error} />;
     if (!property) return null;
 
     const formatDate = (dateString) => {
@@ -429,6 +413,301 @@ const PropertyDetails = () => {
         return stars;
     };
 
+    const renderRatingSummary = (property) => {
+        const hasRating = property.averageRating !== undefined;
+        const hasReviews = property.reviewCount !== undefined;
+      
+        if (hasRating && hasReviews) {
+          return `${property.averageRating.toFixed(1)} (${property.reviewCount} reviews)`;
+        }
+      
+        return "No reviews yet";
+      };
+
+    const hasReviewed = property.reviews.some((review) => review.userId === user?._id);
+    const hasBooked = property.bookedDates.some((booking) => booking.userId === user?._id);
+    const canReview = !hasReviewed && hasBooked;
+    const reviewMessage = hasReviewed
+    ? 'You have already reviewed this property.'
+    : 'You must book this property before leaving a review.';
+    
+    const hasReviews = property.reviews && property.reviews.length > 0;
+    
+    const ReviewCard = ({ review }) => (
+        <div className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h4 className="font-semibold">{review.username || 'Anonymous'}</h4>
+              <div className="flex mt-1">{renderStars(review.rating)}</div>
+            </div>
+            <span className="text-sm text-gray-500">{formatDate(review.createdAt)}</span>
+          </div>
+          <p className="text-gray-600 mt-2">{review.comment}</p>
+        </div>
+      );
+    
+    ReviewCard.propTypes = {
+        review: PropTypes.shape({
+          userId: PropTypes.string.isRequired, 
+          username: PropTypes.string.isRequired, 
+          rating: PropTypes.number.isRequired, 
+          comment: PropTypes.string.isRequired,
+          createdAt: PropTypes.string.isRequired, 
+        }).isRequired, 
+    };
+    
+    const hasBookings = property.bookedDates && property.bookedDates.length > 0;
+
+    const BookedDateItem = ({ date, userId, onUnbook }) => {
+        const isBooker = date.userId === userId;
+        return (
+          <li className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
+            <span className="text-gray-900 font-medium">
+              {formatDate(date.checkIn)} — {formatDate(date.checkOut)}
+            </span>
+            {isBooker && (
+              <button
+                type="button"
+                onClick={() => onUnbook(date._id)}
+                className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
+              >
+                Unbook
+              </button>
+            )}
+          </li>
+        );
+      };
+
+    BookedDateItem.propTypes = {
+        date: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+          checkIn: PropTypes.string.isRequired,
+          checkOut: PropTypes.string.isRequired,
+          userId: PropTypes.string.isRequired,
+        }).isRequired,
+        userId: PropTypes.string.isRequired,
+        onUnbook: PropTypes.func.isRequired,
+    };
+
+    const canBook = user && property?.status === 'available' && user._id !== property?.userID;
+
+    const BookingForm = ({ bookingDates, setBookingDates, handleInputChange, handleBooking, property, user }) => {
+        const totalNights = bookingDates.checkIn && bookingDates.checkOut
+            ? Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))
+            : 0;
+        const totalPrice = property.price * totalNights;
+        const dateExclusions = property.bookedDates?.map(({ checkIn, checkOut }) => ({
+            start: new Date(checkIn),
+            end: new Date(checkOut),
+        })) || [];
+        
+        return (
+            <div className="space-y-4">
+            <DateInput
+                label="Check In"
+                selected={bookingDates.checkIn}
+                onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
+                minDate={new Date()}
+                maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                excludeIntervals={dateExclusions}
+            />
+            <DateInput
+                label="Check Out"
+                selected={bookingDates.checkOut}
+                onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
+                minDate={bookingDates.checkIn ? new Date(bookingDates.checkIn.getTime() + 86400000) : new Date()}
+                maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+                excludeIntervals={dateExclusions}
+            />
+            <GuestInput
+                value={bookingDates.guests}
+                onChange={handleInputChange}
+                max={property.maxGuests}
+            />
+            <PriceSummary price={property.price} nights={totalNights} total={totalPrice} />
+            <BookButton
+                isEnabled={bookingDates.checkIn && bookingDates.checkOut && property.status === 'available' && user}
+                onClick={handleBooking}
+                user={user}
+            />
+            </div>
+        );
+    };
+
+    BookingForm.propTypes = {
+        bookingDates: PropTypes.shape({
+          checkIn: PropTypes.instanceOf(Date).isRequired,
+          checkOut: PropTypes.instanceOf(Date).isRequired,
+          guests: PropTypes.number.isRequired,
+        }).isRequired,
+        setBookingDates: PropTypes.func.isRequired,
+        handleInputChange: PropTypes.func.isRequired,
+        handleBooking: PropTypes.func.isRequired,
+        property: PropTypes.shape({
+          price: PropTypes.number.isRequired,
+          maxGuests: PropTypes.number.isRequired,
+          bookedDates: PropTypes.arrayOf(
+            PropTypes.shape({
+              checkIn: PropTypes.string.isRequired,
+              checkOut: PropTypes.string.isRequired,
+            })
+          ).isRequired,
+          availability: PropTypes.shape({
+            endDate: PropTypes.string.isRequired, // Assuming endDate is a string (ISO format)
+          }).isRequired,
+          status: PropTypes.string.isRequired,
+        }).isRequired,
+        user: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+          name: PropTypes.string,
+          email: PropTypes.string,
+        }).isRequired,
+    };
+
+    const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
+        <div>
+          <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
+          <DatePicker
+            id={`${label}-input`}
+            selected={selected}
+            onChange={onChange}
+            minDate={minDate}
+            maxDate={maxDate}
+            excludeDateIntervals={excludeIntervals}
+            placeholderText={`Select ${label.toLowerCase()} date`}
+            className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+    );
+
+    DateInput.propTypes = {
+        label: PropTypes.string.isRequired,
+        selected: PropTypes.instanceOf(Date), // Date object
+        onChange: PropTypes.func.isRequired,
+        minDate: PropTypes.instanceOf(Date), 
+        maxDate: PropTypes.instanceOf(Date), 
+        excludeIntervals: PropTypes.arrayOf(
+          PropTypes.shape({
+            start: PropTypes.instanceOf(Date),
+            end: PropTypes.instanceOf(Date),
+          })
+        ),
+    };
+      
+    const GuestInput = ({ value, onChange, max }) => (
+        <div>
+          <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
+          <div className="relative">
+            <Users className="absolute top-3 left-3 text-gray-400" size={18} />
+            <input
+              id="guests-input"
+              name = "guests"
+              type="number"
+              min="1"
+              max={max}
+              value={value}
+              onChange={onChange}
+              className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+    );
+
+    GuestInput.propTypes = {
+        value: PropTypes.number.isRequired,
+        onChange: PropTypes.func.isRequired,
+        max: PropTypes.number.isRequired,
+    };
+        
+    const PriceSummary = ({ price, nights, total }) => (
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex justify-between mb-2">
+            <span>Price per night</span>
+            <span className="font-semibold">${price}</span>
+          </div>
+          {nights > 0 && (
+            <>
+              <div className="flex justify-between mb-2">
+                <span>Nights</span>
+                <span>{nights}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg mb-4 pt-2 border-t border-gray-200">
+                <span>Total</span>
+                <span className="text-blue-600">${total}</span>
+              </div>
+            </>
+          )}
+        </div>
+    );
+
+    PriceSummary.propTypes = {
+        price: PropTypes.number.isRequired,
+        nights: PropTypes.number.isRequired,
+        total: PropTypes.number.isRequired,
+      };
+    
+    const BookButton = ({ isEnabled, onClick, user }) => (
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={!isEnabled}
+          className={`w-full py-3 rounded-md text-white font-semibold ${
+            isEnabled
+              ? 'bg-blue-600 hover:bg-blue-700 transition duration-300 cursor-pointer'
+              : 'bg-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {user ? 'Book Now' : 'Please log in to book'}
+        </button>
+    );
+
+    BookButton.propTypes = {
+        isEnabled: PropTypes.bool.isRequired,
+        onClick: PropTypes.func.isRequired,
+        user: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+          name: PropTypes.string,
+          email: PropTypes.string,
+        }), // Optional user object
+    };
+
+    const Message = ({ text, isItalic = false, isError = false }) => (
+        <p className={`text-sm mt-2 text-center ${isItalic ? 'italic text-gray-600' : ''} ${isError ? 'text-red-500' : ''}`}>
+          {text}
+        </p>
+    );
+
+    Message.propTypes = {
+        text: PropTypes.string.isRequired,
+        isItalic: PropTypes.bool,
+        isError: PropTypes.bool,
+    }
+
+    const renderBookingContent = () => {
+        if (canBook || !user) {
+          return (
+            <BookingForm
+              bookingDates={bookingDates}
+              setBookingDates={setBookingDates}
+              handleInputChange={handleInputChange}
+              handleBooking={handleBooking}
+              property={property}
+              user={user}
+            />
+          );
+        }
+      
+        if (user?._id === property?.userID) {
+          return <Message text="You cannot book your own property." isItalic />;
+        }
+      
+        return (
+          <Message text={`This property is currently ${property?.status}`} isError />
+        );
+      };
+      
+      
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
@@ -448,13 +727,7 @@ const PropertyDetails = () => {
                                     <div className="flex items-center">
                                         {renderStars(property.averageRating)}
                                         <span className="ml-2 text-gray-600">
-                                        {property.averageRating !== undefined && property.reviewCount !== undefined ? (
-                                            <span className="ml-2 text-gray-600">
-                                                {property.averageRating.toFixed(1)} ({property.reviewCount} reviews)
-                                            </span>
-                                            ) : (
-                                            <span className="ml-2 text-gray-600">No reviews yet</span>
-                                        )}
+                                            {renderRatingSummary(property)}
                                         </span>
                                     </div>
                                 </div>
@@ -586,228 +859,77 @@ const PropertyDetails = () => {
                         
                         {/* Reviews */}
                         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                            Reviews ({property.reviewCount})
-                        </h2>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                                Reviews ({property.reviewCount})
+                            </h2>
 
-                        {/* Check if user has already reviewed */}
-                        {user && 
-                        !property.reviews.some((review) => review.userId === user._id) &&
-                        property.bookedDates.some((booking) => booking.userId === user._id) ? (
-                        <div className="bg-gray-50 p-4 rounded-lg border mb-6">
-                            <h3 className="text-lg font-semibold mb-2 text-gray-700">Leave a Review</h3>
-                            {renderInteractiveStars()}
-                            <textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            rows={3}
-                            placeholder="Write your comment here..."
-                            className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-2"
-                            ></textarea>
-                            {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
-                            <button
-                            onClick={handleSubmitReview}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                            >
-                            Submit Review
-                            </button>
+                            {/* Check if user has already reviewed */}
+                            {user && (
+                                canReview ? (
+                                    <div className="bg-gray-50 p-4 rounded-lg border mb-6">
+                                    <h3 className="text-lg font-semibold mb-2 text-gray-700">Leave a Review</h3>
+                                    {renderInteractiveStars()}
+                                    <textarea
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        rows={3}
+                                        placeholder="Write your comment here..."
+                                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-2"
+                                    ></textarea>
+                                    {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmitReview}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer"
+                                    >
+                                        Submit Review
+                                    </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-gray-600 mb-4">
+                                        <p>{reviewMessage}</p>
+                                    </div>
+                                )
+                            )}
                         </div>
-                        ) : (
-                        user && (
-                            <div className="text-gray-600 mb-4">
-                            <p>
-                                {property.reviews.some((review) => review.userId === user._id)
-                                ? 'You have already reviewed this property.'
-                                : 'You must book this property before leaving a review.'}
-                            </p>
-                            </div>
-                        )
-                        )}
 
                         {/* Reviews by Others */}
-                        {property.reviews && property.reviews.length > 0 ? (
-                            <div className="space-y-6">
+                        {hasReviews ? (
+                        <div className="space-y-6">
                             {property.reviews.map((review, index) => (
-                                <div key={index} className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                    <h4 className="font-semibold">
-                                        {review.username || 'Anonymous'}
-                                    </h4>
-                                    <div className="flex mt-1">
-                                        {renderStars(review.rating)}
-                                    </div>
-                                    </div>
-                                    <span className="text-sm text-gray-500">
-                                    {formatDate(review.createdAt)}
-                                    </span>
-                                </div>
-                                <p className="text-gray-600 mt-2">{review.comment}</p>
-                                </div>
+                            <ReviewCard key={review._id} review={review} />
                             ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-600">No reviews yet.</p>
-                        )}
                         </div>
+                        ) : (
+                        <p className="text-gray-600">No reviews yet.</p>
+                        )}
+
 
                         {/* Booked Dates */}
                         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                            Booked Dates
-                        </h2>
-
-                        {property.bookedDates && property.bookedDates.length > 0 ? (
-                            <ul className="space-y-4 text-gray-700 text-sm">
-                            {property.bookedDates.map((date, index) => (
-                                <li key={index} className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
-                                <span className="text-gray-900 font-medium">
-                                    {formatDate(date.checkIn)} — {formatDate(date.checkOut)}
-                                </span>
-
-                                {/* Show "Unbook" if current user booked this */}
-                                {user && date.userId === user._id && (
-                                    <button
-                                    onClick={() => handleUnbook(date._id)}
-                                    className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
-                                    >
-                                    Unbook
-                                    </button>
-                                )}
-                                </li>
-                            ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-600 text-lg">This property has not been booked yet.</p>
-                        )}
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Booked Dates</h2>
+                            {hasBookings ? (
+                                
+                                <ul className="space-y-4 text-gray-700 text-sm">
+                                {property.bookedDates.map((date, index) => (
+                                    <BookedDateItem key={date._id} date={date} userId={user?._id} onUnbook={handleUnbook} />
+                                ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-600 text-lg">This property has not been booked yet.</p>
+                            )}
                         </div>
 
                     </div>
 
                     
                     {/* Booking Form */}
-                    {property?.status === "available" && user?._id !== property?.userID ? (
                     <div className="lg:col-span-1">
                         <div className="bg-white shadow-md rounded-lg p-6 sticky top-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Book Now</h2>
-                            <div className="space-y-4">
-                                {/* Check In */}
-                                <div>
-                                    <label id="check-in-label" className="block text-gray-700 mb-2">Check In</label>
-                                    <div role="group" aria-labelledby="check-in-label">
-                                    <DatePicker
-                                        selected={bookingDates.checkIn}
-                                        onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
-                                        minDate={new Date()} // ✅ Today or future only
-                                        maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                                        excludeDateIntervals={
-                                            property.bookedDates?.map(({ checkIn, checkOut }) => ({
-                                            start: new Date(checkIn),
-                                            end: new Date(checkOut),
-                                            })) || []
-                                        }
-                                        placeholderText="Select check-in date"
-                                        className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    </div>
-                                </div>
-
-                                {/* Check Out */}
-                                <div>
-                                    <label id="check-out-label" className="block text-gray-700 mb-2">Check Out</label>
-                                    <div role="group" aria-labelledby="check-out-label">
-                                    <DatePicker
-                                        selected={bookingDates.checkOut}
-                                        onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
-                                        minDate={
-                                            bookingDates.checkIn
-                                            ? new Date(bookingDates.checkIn.getTime() + 24 * 60 * 60 * 1000)
-                                            : new Date()
-                                        }
-                                        maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                                        excludeDateIntervals={
-                                            property.bookedDates?.map(({ checkIn, checkOut }) => ({
-                                            start: new Date(checkIn),
-                                            end: new Date(checkOut),
-                                            })) || []
-                                        }
-                                        placeholderText="Select check-out date"
-                                        className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
-                                    <div className="relative">
-                                        <Users className="absolute top-3 left-3 text-gray-400" size={18} />
-                                        <input
-                                            type="number"
-                                            name="guests"
-                                            min="1"
-                                            max={property.maxGuests}
-                                            value={bookingDates.guests}
-                                            onChange={handleInputChange}
-                                            className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div className="pt-4 border-t border-gray-200">
-                                    <div className="flex justify-between mb-2">
-                                        <span>Price per night</span>
-                                        <span className="font-semibold">${property.price}</span>
-                                    </div>
-                                    
-                                    {bookingDates.checkIn && bookingDates.checkOut && (
-                                        <>
-                                            <div className="flex justify-between mb-2">
-                                                <span>Nights</span>
-                                                <span>
-                                                    {Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between font-bold text-lg mb-4 pt-2 border-t border-gray-200">
-                                                <span>Total</span>
-                                                <span className="text-blue-600">
-                                                    ${property.price * Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))}
-                                                </span>
-                                            </div>
-                                        </>
-                                    )}
-                                    
-                                    <button
-                                        type="button"
-                                        onClick={handleBooking}
-                                        disabled={!bookingDates.checkIn || !bookingDates.checkOut || property.status !== 'available' || user === null}
-                                        className={`w-full py-3 rounded-md text-white font-semibold cursor-pointer ${
-                                            property.status === 'available' && bookingDates.checkIn && bookingDates.checkOut && user !== null
-                                                ? 'bg-blue-600 hover:bg-blue-700 transition duration-300'
-                                                : 'bg-gray-400 cursor-not-allowed'
-                                        }`}
-                                    >
-                                        {/* {property.status === 'available' ? 'Book Now' : 'Currently Unavailable'} */}
-                                        {user !== null ? 'Book Now' : 'Please log in to book'}
-                                    </button>
-                                    
-                                    {/* {property.status !== 'available' && (
-                                        <p className="text-red-500 text-sm mt-2 text-center">
-                                            This property is currently {property.status}
-                                        </p>
-                                    )} */}
-                                </div>
-                            </div>
+                            {renderBookingContent()}
                         </div>
                     </div>
-                    ) : user?._id === property?.userID ? (
-                        <p className="text-gray-600 text-sm mt-2 text-center italic">
-                          You cannot book your own property.
-                        </p>
-                      ) : (
-                        <p className="text-red-500 text-sm mt-2 text-center">
-                          This property is currently {property?.status}
-                        </p>
-                    )}
                 </div>
             </div>
             

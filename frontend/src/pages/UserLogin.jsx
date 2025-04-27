@@ -17,7 +17,7 @@ const UserLogin = () => {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -40,14 +40,10 @@ const UserLogin = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:4000/auth/google';
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
   };
 
   return (
-    <>
-    <div className="text-2xl font-bold text-blue-600">
-        <Link to="/">Skynet</Link>
-    </div>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">User Login</h2>
@@ -95,10 +91,11 @@ const UserLogin = () => {
           <Link to="/admin/login" className="text-blue-600 hover:underline block">Admin Login</Link>
           <Link to="#" className="text-blue-600 hover:underline block">Forgot Password?</Link>
           <Link to="/signup" className="text-blue-600 hover:underline block">Create an Account</Link>
+          <span className="block my-2">- or -</span> {/* Moves to new line */}
+          <Link to="/" className="text-gray-600 hover:underline block">Continue as Guest</Link>
         </div>
       </div>
-    </div>
-    </>
+    </div> 
   );
 };
 
