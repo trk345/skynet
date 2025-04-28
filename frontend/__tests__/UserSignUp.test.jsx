@@ -31,6 +31,21 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('UserSignup Component', () => {
+  const fillAndSubmitForm = () => {
+    render(
+      <MemoryRouter>
+        <UserSignup />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
+
+    fireEvent.click(screen.getByText('Sign Up'));
+  };
+  
   beforeEach(() => {
     vi.stubGlobal('import.meta', {
       env: { VITE_API_URL: 'http://localhost:4000' },
@@ -88,28 +103,6 @@ describe('UserSignup Component', () => {
     expect(passwordInput.value).toBe('password123');
     expect(confirmPasswordInput.value).toBe('password123');
   });
-
-  // test('handles password mismatch error', async () => {
-  //   render(
-  //     <MemoryRouter>
-  //       <UserSignup />
-  //     </MemoryRouter>
-  //   );
-  
-  //   const passwordInput = screen.getByPlaceholderText('Password');
-  //   const confirmPasswordInput = screen.getByPlaceholderText('Confirm Password');
-  //   const buttons = screen.getAllByRole('button', { name: /sign up/i });
-    
-  
-  //   fireEvent.change(passwordInput, { target: { value: 'password123' } });
-  //   fireEvent.change(confirmPasswordInput, { target: { value: 'differentpass' } });
-  //   fireEvent.click(buttons[0]);
-  
-  //   const errorMessage = screen.getByRole('alert');
-  //   expect(errorMessage).toBeInTheDocument();
-  //   expect(global.fetch).not.toHaveBeenCalled();
-  //   expect(mockNavigate).not.toHaveBeenCalled();
-  // });
   
   test('handles successful signup and redirects', async () => {
     global.fetch.mockResolvedValueOnce({
@@ -117,18 +110,7 @@ describe('UserSignup Component', () => {
       json: async () => ({ user: { id: '123', username: 'testuser' } }),
     });
 
-    render(
-      <MemoryRouter>
-        <UserSignup />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'testuser' } });
-    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-
-    fireEvent.click(screen.getByText('Sign Up'));
+    fillAndSubmitForm();
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
@@ -155,18 +137,7 @@ describe('UserSignup Component', () => {
       json: async () => ({ message: 'Email already exists' }),
     });
 
-    render(
-      <MemoryRouter>
-        <UserSignup />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'testuser' } });
-    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-
-    fireEvent.click(screen.getByText('Sign Up'));
+    fillAndSubmitForm();
 
     await waitFor(() => {
       expect(screen.getByText('Email already exists')).toBeInTheDocument();
@@ -180,18 +151,7 @@ describe('UserSignup Component', () => {
       json: async () => ({}),
     });
 
-    render(
-      <MemoryRouter>
-        <UserSignup />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'testuser' } });
-    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-
-    fireEvent.click(screen.getByText('Sign Up'));
+    fillAndSubmitForm();
 
     await waitFor(() => {
       expect(screen.getByText('Signup failed')).toBeInTheDocument();
@@ -202,18 +162,7 @@ describe('UserSignup Component', () => {
   test('handles network error during signup', async () => {
     global.fetch.mockRejectedValueOnce(new Error('Network error'));
 
-    render(
-      <MemoryRouter>
-        <UserSignup />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'testuser' } });
-    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-
-    fireEvent.click(screen.getByText('Sign Up'));
+    fillAndSubmitForm();
 
     await waitFor(() => {
       expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
