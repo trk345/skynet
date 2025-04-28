@@ -192,6 +192,278 @@ function PropertyImageGallery({ images = [] }) {
     );
 }
 
+PropertyImageGallery.propTypes = {
+    images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
+};
+
+
+const formatDate = (dateString) => {
+    if (!dateString) return 'Not specified';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+        stars.push(
+            <Star 
+                key={i} 
+                size={18} 
+                className={i <= rating ? "text-yellow-500 fill-yellow-500" : "text-gray-300"} 
+            />
+        );
+    }
+    return stars;
+};
+
+const ReviewCard = ({ review }) => (
+    <div className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <h4 className="font-semibold">{review.username || 'Anonymous'}</h4>
+          <div className="flex mt-1">{renderStars(review.rating)}</div>
+        </div>
+        <span className="text-sm text-gray-500">{formatDate(review.createdAt)}</span>
+      </div>
+      <p className="text-gray-600 mt-2">{review.comment}</p>
+    </div>
+  );
+
+ReviewCard.propTypes = {
+    review: PropTypes.shape({
+      userId: PropTypes.string.isRequired, 
+      username: PropTypes.string.isRequired, 
+      rating: PropTypes.number.isRequired, 
+      comment: PropTypes.string.isRequired,
+      createdAt: PropTypes.string.isRequired, 
+    }).isRequired, 
+};
+
+const BookedDateItem = ({ date, userId, onUnbook }) => {
+    const isBooker = date.userId === userId;
+    return (
+      <li className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
+        <span className="text-gray-900 font-medium">
+          {formatDate(date.checkIn)} — {formatDate(date.checkOut)}
+        </span>
+        {isBooker && (
+          <button
+            type="button"
+            onClick={() => onUnbook(date._id)}
+            className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
+          >
+            Unbook
+          </button>
+        )}
+      </li>
+    );
+  };
+
+BookedDateItem.propTypes = {
+    date: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      checkIn: PropTypes.string.isRequired,
+      checkOut: PropTypes.string.isRequired,
+      userId: PropTypes.string,
+    }).isRequired,
+    userId: PropTypes.string.isRequired,
+    onUnbook: PropTypes.func.isRequired,
+};
+
+const BookingForm = ({ bookingDates, setBookingDates, handleInputChange, handleBooking, property, user }) => {
+    const totalNights = bookingDates.checkIn && bookingDates.checkOut
+        ? Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))
+        : 0;
+    const totalPrice = property.price * totalNights;
+    const dateExclusions = property.bookedDates?.map(({ checkIn, checkOut }) => ({
+        start: new Date(checkIn),
+        end: new Date(checkOut),
+    })) || [];
+    
+    return (
+        <div className="space-y-4">
+        <DateInput
+            label="Check In"
+            selected={bookingDates.checkIn}
+            onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
+            minDate={new Date()}
+            maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+            excludeIntervals={dateExclusions}
+        />
+        <DateInput
+            label="Check Out"
+            selected={bookingDates.checkOut}
+            onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
+            minDate={bookingDates.checkIn ? new Date(bookingDates.checkIn.getTime() + 86400000) : new Date()}
+            maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
+            excludeIntervals={dateExclusions}
+        />
+        <GuestInput
+            value={bookingDates.guests}
+            onChange={handleInputChange}
+            max={property.maxGuests}
+        />
+        <PriceSummary price={property.price} nights={totalNights} total={totalPrice} />
+        <BookButton
+            isEnabled={bookingDates.checkIn && bookingDates.checkOut && property.status === 'available' && user}
+            onClick={handleBooking}
+            user={user}
+        />
+        </div>
+    );
+};
+
+BookingForm.propTypes = {
+    bookingDates: PropTypes.shape({
+      checkIn: PropTypes.instanceOf(Date),
+      checkOut: PropTypes.instanceOf(Date),
+      guests: PropTypes.number.isRequired,
+    }).isRequired,
+    setBookingDates: PropTypes.func.isRequired,
+    handleInputChange: PropTypes.func.isRequired,
+    handleBooking: PropTypes.func.isRequired,
+    property: PropTypes.shape({
+      price: PropTypes.number.isRequired,
+      maxGuests: PropTypes.number.isRequired,
+      bookedDates: PropTypes.arrayOf(
+        PropTypes.shape({
+          checkIn: PropTypes.string.isRequired,
+          checkOut: PropTypes.string.isRequired,
+        })
+      ).isRequired,
+      availability: PropTypes.shape({
+        endDate: PropTypes.string, // Assuming endDate is a string (ISO format)
+      }).isRequired,
+      status: PropTypes.string.isRequired,
+    }).isRequired,
+    user: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      name: PropTypes.string,
+      email: PropTypes.string,
+    }).isRequired,
+};
+
+const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
+    <div>
+      <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
+      <DatePicker
+        id={`${label}-input`}
+        selected={selected}
+        onChange={onChange}
+        minDate={minDate}
+        maxDate={maxDate}
+        excludeDateIntervals={excludeIntervals}
+        placeholderText={`Select ${label.toLowerCase()} date`}
+        className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+);
+
+DateInput.propTypes = {
+    label: PropTypes.string.isRequired,
+    selected: PropTypes.instanceOf(Date), // Date object
+    onChange: PropTypes.func.isRequired,
+    minDate: PropTypes.instanceOf(Date), 
+    maxDate: PropTypes.instanceOf(Date), 
+    excludeIntervals: PropTypes.arrayOf(
+      PropTypes.shape({
+        start: PropTypes.instanceOf(Date),
+        end: PropTypes.instanceOf(Date),
+      })
+    ),
+};
+  
+const GuestInput = ({ value, onChange, max }) => (
+    <div>
+      <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
+      <div className="relative">
+        <Users className="absolute top-3 left-3 text-gray-400" size={18} />
+        <input
+          id="guests-input"
+          name = "guests"
+          type="number"
+          min="1"
+          max={max}
+          value={value}
+          onChange={onChange}
+          className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    </div>
+);
+
+GuestInput.propTypes = {
+    value: PropTypes.number.isRequired,
+    onChange: PropTypes.func.isRequired,
+    max: PropTypes.number.isRequired,
+};
+    
+const PriceSummary = ({ price, nights, total }) => (
+    <div className="pt-4 border-t border-gray-200">
+      <div className="flex justify-between mb-2">
+        <span>Price per night</span>
+        <span className="font-semibold">${price}</span>
+      </div>
+      {nights > 0 && (
+        <>
+          <div className="flex justify-between mb-2">
+            <span>Nights</span>
+            <span>{nights}</span>
+          </div>
+          <div className="flex justify-between font-bold text-lg mb-4 pt-2 border-t border-gray-200">
+            <span>Total</span>
+            <span className="text-blue-600">${total}</span>
+          </div>
+        </>
+      )}
+    </div>
+);
+
+PriceSummary.propTypes = {
+    price: PropTypes.number.isRequired,
+    nights: PropTypes.number.isRequired,
+    total: PropTypes.number.isRequired,
+  };
+
+const BookButton = ({ isEnabled, onClick, user }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!isEnabled}
+      className={`w-full py-3 rounded-md text-white font-semibold ${
+        isEnabled
+          ? 'bg-blue-600 hover:bg-blue-700 transition duration-300 cursor-pointer'
+          : 'bg-gray-400 cursor-not-allowed'
+      }`}
+    >
+      {user ? 'Book Now' : 'Please log in to book'}
+    </button>
+);
+
+BookButton.propTypes = {
+    isEnabled: PropTypes.bool,
+    onClick: PropTypes.func.isRequired,
+    user: PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      name: PropTypes.string,
+      email: PropTypes.string,
+    }), // Optional user object
+};
+
+const Message = ({ text, isItalic = false, isError = false }) => (
+    <p className={`text-sm mt-2 text-center ${isItalic ? 'italic text-gray-600' : ''} ${isError ? 'text-red-500' : ''}`}>
+      {text}
+    </p>
+);
+
+Message.propTypes = {
+    text: PropTypes.string.isRequired,
+    isItalic: PropTypes.bool,
+    isError: PropTypes.bool,
+}
+
+
 const PropertyDetails = () => {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
@@ -393,26 +665,6 @@ const PropertyDetails = () => {
     if (error) return <ErrorScreen message={error} />;
     if (!property) return null;
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Not specified';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    };
-
-    const renderStars = (rating) => {
-        const stars = [];
-        for (let i = 1; i <= 5; i++) {
-            stars.push(
-                <Star 
-                    key={i} 
-                    size={18} 
-                    className={i <= rating ? "text-yellow-500 fill-yellow-500" : "text-gray-300"} 
-                />
-            );
-        }
-        return stars;
-    };
-
     const renderRatingSummary = (property) => {
         const hasRating = property.averageRating !== undefined;
         const hasReviews = property.reviewCount !== undefined;
@@ -433,255 +685,9 @@ const PropertyDetails = () => {
     
     const hasReviews = property.reviews && property.reviews.length > 0;
     
-    const ReviewCard = ({ review }) => (
-        <div className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="font-semibold">{review.username || 'Anonymous'}</h4>
-              <div className="flex mt-1">{renderStars(review.rating)}</div>
-            </div>
-            <span className="text-sm text-gray-500">{formatDate(review.createdAt)}</span>
-          </div>
-          <p className="text-gray-600 mt-2">{review.comment}</p>
-        </div>
-      );
-    
-    ReviewCard.propTypes = {
-        review: PropTypes.shape({
-          userId: PropTypes.string.isRequired, 
-          username: PropTypes.string.isRequired, 
-          rating: PropTypes.number.isRequired, 
-          comment: PropTypes.string.isRequired,
-          createdAt: PropTypes.string.isRequired, 
-        }).isRequired, 
-    };
-    
     const hasBookings = property.bookedDates && property.bookedDates.length > 0;
 
-    const BookedDateItem = ({ date, userId, onUnbook }) => {
-        const isBooker = date.userId === userId;
-        return (
-          <li className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
-            <span className="text-gray-900 font-medium">
-              {formatDate(date.checkIn)} — {formatDate(date.checkOut)}
-            </span>
-            {isBooker && (
-              <button
-                type="button"
-                onClick={() => onUnbook(date._id)}
-                className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-md hover:bg-red-600 transition duration-200"
-              >
-                Unbook
-              </button>
-            )}
-          </li>
-        );
-      };
-
-    BookedDateItem.propTypes = {
-        date: PropTypes.shape({
-          _id: PropTypes.string.isRequired,
-          checkIn: PropTypes.string.isRequired,
-          checkOut: PropTypes.string.isRequired,
-          userId: PropTypes.string.isRequired,
-        }).isRequired,
-        userId: PropTypes.string.isRequired,
-        onUnbook: PropTypes.func.isRequired,
-    };
-
     const canBook = user && property?.status === 'available' && user._id !== property?.userID;
-
-    const BookingForm = ({ bookingDates, setBookingDates, handleInputChange, handleBooking, property, user }) => {
-        const totalNights = bookingDates.checkIn && bookingDates.checkOut
-            ? Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))
-            : 0;
-        const totalPrice = property.price * totalNights;
-        const dateExclusions = property.bookedDates?.map(({ checkIn, checkOut }) => ({
-            start: new Date(checkIn),
-            end: new Date(checkOut),
-        })) || [];
-        
-        return (
-            <div className="space-y-4">
-            <DateInput
-                label="Check In"
-                selected={bookingDates.checkIn}
-                onChange={(date) => setBookingDates({ ...bookingDates, checkIn: date })}
-                minDate={new Date()}
-                maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                excludeIntervals={dateExclusions}
-            />
-            <DateInput
-                label="Check Out"
-                selected={bookingDates.checkOut}
-                onChange={(date) => setBookingDates({ ...bookingDates, checkOut: date })}
-                minDate={bookingDates.checkIn ? new Date(bookingDates.checkIn.getTime() + 86400000) : new Date()}
-                maxDate={property.availability?.endDate ? new Date(property.availability.endDate) : null}
-                excludeIntervals={dateExclusions}
-            />
-            <GuestInput
-                value={bookingDates.guests}
-                onChange={handleInputChange}
-                max={property.maxGuests}
-            />
-            <PriceSummary price={property.price} nights={totalNights} total={totalPrice} />
-            <BookButton
-                isEnabled={bookingDates.checkIn && bookingDates.checkOut && property.status === 'available' && user}
-                onClick={handleBooking}
-                user={user}
-            />
-            </div>
-        );
-    };
-
-    BookingForm.propTypes = {
-        bookingDates: PropTypes.shape({
-          checkIn: PropTypes.instanceOf(Date).isRequired,
-          checkOut: PropTypes.instanceOf(Date).isRequired,
-          guests: PropTypes.number.isRequired,
-        }).isRequired,
-        setBookingDates: PropTypes.func.isRequired,
-        handleInputChange: PropTypes.func.isRequired,
-        handleBooking: PropTypes.func.isRequired,
-        property: PropTypes.shape({
-          price: PropTypes.number.isRequired,
-          maxGuests: PropTypes.number.isRequired,
-          bookedDates: PropTypes.arrayOf(
-            PropTypes.shape({
-              checkIn: PropTypes.string.isRequired,
-              checkOut: PropTypes.string.isRequired,
-            })
-          ).isRequired,
-          availability: PropTypes.shape({
-            endDate: PropTypes.string.isRequired, // Assuming endDate is a string (ISO format)
-          }).isRequired,
-          status: PropTypes.string.isRequired,
-        }).isRequired,
-        user: PropTypes.shape({
-          _id: PropTypes.string.isRequired,
-          name: PropTypes.string,
-          email: PropTypes.string,
-        }).isRequired,
-    };
-
-    const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
-        <div>
-          <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
-          <DatePicker
-            id={`${label}-input`}
-            selected={selected}
-            onChange={onChange}
-            minDate={minDate}
-            maxDate={maxDate}
-            excludeDateIntervals={excludeIntervals}
-            placeholderText={`Select ${label.toLowerCase()} date`}
-            className="w-full pl-3 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-    );
-
-    DateInput.propTypes = {
-        label: PropTypes.string.isRequired,
-        selected: PropTypes.instanceOf(Date), // Date object
-        onChange: PropTypes.func.isRequired,
-        minDate: PropTypes.instanceOf(Date), 
-        maxDate: PropTypes.instanceOf(Date), 
-        excludeIntervals: PropTypes.arrayOf(
-          PropTypes.shape({
-            start: PropTypes.instanceOf(Date),
-            end: PropTypes.instanceOf(Date),
-          })
-        ),
-    };
-      
-    const GuestInput = ({ value, onChange, max }) => (
-        <div>
-          <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
-          <div className="relative">
-            <Users className="absolute top-3 left-3 text-gray-400" size={18} />
-            <input
-              id="guests-input"
-              name = "guests"
-              type="number"
-              min="1"
-              max={max}
-              value={value}
-              onChange={onChange}
-              className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-    );
-
-    GuestInput.propTypes = {
-        value: PropTypes.number.isRequired,
-        onChange: PropTypes.func.isRequired,
-        max: PropTypes.number.isRequired,
-    };
-        
-    const PriceSummary = ({ price, nights, total }) => (
-        <div className="pt-4 border-t border-gray-200">
-          <div className="flex justify-between mb-2">
-            <span>Price per night</span>
-            <span className="font-semibold">${price}</span>
-          </div>
-          {nights > 0 && (
-            <>
-              <div className="flex justify-between mb-2">
-                <span>Nights</span>
-                <span>{nights}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg mb-4 pt-2 border-t border-gray-200">
-                <span>Total</span>
-                <span className="text-blue-600">${total}</span>
-              </div>
-            </>
-          )}
-        </div>
-    );
-
-    PriceSummary.propTypes = {
-        price: PropTypes.number.isRequired,
-        nights: PropTypes.number.isRequired,
-        total: PropTypes.number.isRequired,
-      };
-    
-    const BookButton = ({ isEnabled, onClick, user }) => (
-        <button
-          type="button"
-          onClick={onClick}
-          disabled={!isEnabled}
-          className={`w-full py-3 rounded-md text-white font-semibold ${
-            isEnabled
-              ? 'bg-blue-600 hover:bg-blue-700 transition duration-300 cursor-pointer'
-              : 'bg-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {user ? 'Book Now' : 'Please log in to book'}
-        </button>
-    );
-
-    BookButton.propTypes = {
-        isEnabled: PropTypes.bool.isRequired,
-        onClick: PropTypes.func.isRequired,
-        user: PropTypes.shape({
-          _id: PropTypes.string.isRequired,
-          name: PropTypes.string,
-          email: PropTypes.string,
-        }), // Optional user object
-    };
-
-    const Message = ({ text, isItalic = false, isError = false }) => (
-        <p className={`text-sm mt-2 text-center ${isItalic ? 'italic text-gray-600' : ''} ${isError ? 'text-red-500' : ''}`}>
-          {text}
-        </p>
-    );
-
-    Message.propTypes = {
-        text: PropTypes.string.isRequired,
-        isItalic: PropTypes.bool,
-        isError: PropTypes.bool,
-    }
 
     const renderBookingContent = () => {
         if (canBook || !user) {
@@ -705,7 +711,6 @@ const PropertyDetails = () => {
           <Message text={`This property is currently ${property?.status}`} isError />
         );
       };
-      
       
 
     return (
@@ -909,7 +914,6 @@ const PropertyDetails = () => {
                         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Booked Dates</h2>
                             {hasBookings ? (
-                                
                                 <ul className="space-y-4 text-gray-700 text-sm">
                                 {property.bookedDates.map((date, index) => (
                                     <BookedDateItem key={date._id} date={date} userId={user?._id} onUnbook={handleUnbook} />
@@ -936,10 +940,6 @@ const PropertyDetails = () => {
             <Footer />
         </div>
     );
-};
-
-PropertyImageGallery.propTypes = {
-    images: PropTypes.arrayOf(PropTypes.string), // Assuming the images are an array of strings (URLs)
 };
 
 export default PropertyDetails;

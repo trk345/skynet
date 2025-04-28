@@ -18,6 +18,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, 'dist'],
     coverage: {
       reporter: ['text', 'html', 'lcov'], // Generates terminal + HTML reports
+      reportsDirectory: './coverage/frontend', // Match sonar-project.properties
     },
   },
 })

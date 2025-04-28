@@ -111,13 +111,14 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_HOST_URL: https://sonarcloud.io
       with:
+        projectBaseDir: .
         args: >
-          -Dsonar.organization=learnathon-By-Geeky-Solutions
+          -Dsonar.organization=Learnathon-By-Geeky-Solutions
           -Dsonar.projectKey=Learnathon-By-Geeky-Solutions_skynet
           -Dsonar.projectName=skynet
           -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
           -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js,**/__tests__/**,**/__mocks__/**
-          -Dsonar.javascript.node.maxspace=8192
+          -Dsonar.javascript.node.maxspace=8192            -Dsonar.cpd.exclusions=**/__tests__/**,**/*.test.js,**/*.test.jsx,**/*.spec.js,**/*.spec.jsx
           -Dsonar.sonarcloud.automaticAnalysisDisabled=true
           -Dsonar.analysis.automaticAnalysisConfigurationRun=false
           -Dsonar.ci.autoconfig.disabled=true

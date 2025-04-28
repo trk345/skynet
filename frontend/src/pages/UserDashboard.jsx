@@ -62,8 +62,8 @@ const UserDashboard = () => {
           let ratedProperties = 0;
           
           propertiesData.forEach(property => {
-            if (property.rating && property.rating > 0) {
-              ratingSum += property.rating;
+            if (property.averageRating && property.averageRating > 0) {
+              ratingSum += property.averageRating;
               ratedProperties++;
             }
           });
@@ -73,7 +73,7 @@ const UserDashboard = () => {
           // Update stats
           setStats({
             totalProperties: propertiesData.length,
-            activeListings: propertiesData.filter(p => p.status === 'active').length,
+            activeListings: propertiesData.filter(p => p.status === 'available').length,
             averageRating: avgRating,
             totalReviews: totalReviews,
           });
@@ -329,7 +329,7 @@ const UserDashboard = () => {
                 {/* Ratings and Reviews */}
                 <div className="mb-4">
                   <div className="flex items-center mb-1">
-                    {renderStars(property.rating || 0)}
+                    {renderStars(property.averageRating || 0)}
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
                     <MessageCircle size={16} className="mr-1" /> 
