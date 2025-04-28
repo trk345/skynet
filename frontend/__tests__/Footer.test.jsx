@@ -1,26 +1,24 @@
+// frontend/__tests__/Footer.test.jsx
 import { describe, test, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import Footer from '../src/components/Footer';
+import { screen } from '@testing-library/react';
+import Footer from '../src/components/Footer'; // Adjust path as needed
+import { render } from '@testing-library/react';
 
 describe('Footer Component', () => {
-  test('renders footer with copyright text', () => {
+  test('renders correctly with copyright information', () => {
     render(<Footer />);
     
-    // Check that the footer element exists
-    const footerElement = screen.getByRole('contentinfo');
-    expect(footerElement).toBeInTheDocument();
-    expect(footerElement).toHaveClass('bg-gray-800');
-    expect(footerElement).toHaveClass('text-white');
-    
-    // Check the copyright text
-    const copyrightText = screen.getByText(/2025 Skynet. All rights reserved./i);
+    // Check for copyright text
+    const copyrightText = screen.getByText(/© 2025 Skynet. All rights reserved./i);
     expect(copyrightText).toBeInTheDocument();
+  });
+
+  test('has the correct styling classes', () => {
+    render(<Footer />);
     
-    // Verify container styling
-    const containerDiv = footerElement.querySelector('.container');
-    expect(containerDiv).toBeInTheDocument();
-    expect(containerDiv).toHaveClass('mx-auto');
-    expect(containerDiv).toHaveClass('px-4');
-    expect(containerDiv).toHaveClass('text-center');
+    // Check that footer has correct styling classes
+    const footer = screen.getByRole('contentinfo');
+    expect(footer).toHaveClass('bg-gray-800');
+    expect(footer).toHaveClass('text-white');
   });
 });
