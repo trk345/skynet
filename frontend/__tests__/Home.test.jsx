@@ -29,6 +29,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 // Mock react-router-dom Link component
+/* eslint-disable react/prop-types */
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
