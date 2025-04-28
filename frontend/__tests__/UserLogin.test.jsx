@@ -21,6 +21,28 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('UserLogin Component', () => {
+  async function renderLoginAndSubmit({ fetchMock, expectedErrorText }) {
+    global.fetch.mockImplementationOnce(fetchMock);
+  
+    render(
+      <MemoryRouter>
+        <UserLogin />
+      </MemoryRouter>
+    );
+  
+    const emailInput = screen.getByPlaceholderText('Email');
+    const passwordInput = screen.getByPlaceholderText('Password');
+    const submitButton = screen.getByText('Login');
+  
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.click(submitButton);
+  
+    await waitFor(() => {
+      const errorElement = screen.getByText(expectedErrorText);
+      expect(errorElement).toBeInTheDocument();
+    });
+  }
   // Set up environment variable
   beforeEach(() => {
     vi.stubGlobal('import.meta', { 
@@ -154,58 +176,27 @@ describe('UserLogin Component', () => {
   });
 
   test('handles login error with default message when no server message', async () => {
-    // Mock failed fetch response without specific error message
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({})
-    });
-    
-    render(
-      <MemoryRouter>
-        <UserLogin />
-      </MemoryRouter>
-    );
-    
-    const emailInput = screen.getByPlaceholderText('Email');
-    const passwordInput = screen.getByPlaceholderText('Password');
-    const submitButton = screen.getByText('Login');
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
-    
-    // Wait for the error message to appear
-    await waitFor(() => {
-      const errorElement = screen.getByText('Login failed');
-      expect(errorElement).toBeInTheDocument();
+    await renderLoginAndSubmit({
+      fetchMock: () => Promise.resolve({
+        ok: false,
+        json: async () => ({})
+      }),
+      expectedErrorText: 'Login failed'
     });
   });
+  
 
+  
   test('handles network error during login', async () => {
-    // Mock fetch throwing an error
-    global.fetch.mockRejectedValueOnce(new Error('Network error'));
+    console.error = vi.fn();
     
-    render(
-      <MemoryRouter>
-        <UserLogin />
-      </MemoryRouter>
-    );
-    
-    const emailInput = screen.getByPlaceholderText('Email');
-    const passwordInput = screen.getByPlaceholderText('Password');
-    const submitButton = screen.getByText('Login');
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
-    
-    // Wait for the error message to appear
-    await waitFor(() => {
-      const errorElement = screen.getByText('Something went wrong. Please try again.');
-      expect(errorElement).toBeInTheDocument();
-      expect(console.error).toHaveBeenCalled();
+    await renderLoginAndSubmit({
+      fetchMock: () => Promise.reject(new Error('Network error')),
+      expectedErrorText: 'Something went wrong. Please try again.'
     });
-  });
+
+    expect(console.error).toHaveBeenCalled();
+  })
 
   test('redirects to Google OAuth when clicking Google login button', () => {
     // Mock window.location
