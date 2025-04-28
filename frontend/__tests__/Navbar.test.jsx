@@ -2,13 +2,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import axios from 'axios';
-import Navbar from '../components/Navbar';
+import Navbar from '../src/components/Navbar';
 
 // Mock axios
 vi.mock('axios');
 
 // Mock the Notifications component
-vi.mock('../components/Notifications', () => ({
+vi.mock('../src/components/Notifications', () => ({
   default: () => <div data-testid="notifications">Notifications</div>
 }));
 

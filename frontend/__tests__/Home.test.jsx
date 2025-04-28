@@ -1,15 +1,15 @@
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { Home, PropertyImageGallery } from '../pages/Home';
+import { Home, PropertyImageGallery } from '../src/pages/Home';
 import axios from 'axios';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
 // Mock the modules
 vi.mock('axios');
-vi.mock('../components/Navbar.jsx', () => ({
+vi.mock('../src/components/Navbar.jsx', () => ({
   default: () => <div data-testid="navbar">Navbar</div>
 }));
-vi.mock('../components/Footer.jsx', () => ({
+vi.mock('../src/components/Footer.jsx', () => ({
   default: () => <div data-testid="footer">Footer</div>
 }));
 vi.mock('../src/vite', () => ({
