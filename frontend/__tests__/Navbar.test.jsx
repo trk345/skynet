@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import Navbar from '../src/components/Navbar';
 
@@ -30,6 +30,22 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('Navbar Component', () => {
+  async function renderNavbarWithMockUser(userData) {
+    axios.get.mockResolvedValueOnce({ data: { user: userData } });
+  
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+  
+    // Wait for the auth check to complete
+    await waitFor(() => {
+      expect(screen.getByText(`Hello, ${userData.username}`)).toBeInTheDocument();
+      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.queryByText('Login')).not.toBeInTheDocument();
+    });
+  }
   // Reset mocks before each test
   beforeEach(() => {
     vi.clearAllMocks();
@@ -62,74 +78,16 @@ describe('Navbar Component', () => {
 
   test('renders user navbar when logged in as regular user', async () => {
     // Mock successful login as regular user
-    axios.get.mockResolvedValueOnce({
-      data: {
-        user: {
-          username: 'testuser',
-          role: 'user'
-        }
-      }
-    });
-
-    render(
-      <BrowserRouter>
-        <Navbar />
-      </BrowserRouter>
-    );
-
-    // Wait for the auth check to complete
-    await waitFor(() => {
-      // Username should be displayed
-      expect(screen.getByText('Hello, testuser')).toBeInTheDocument();
-      
-      // Dashboard link should be visible
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
-      
-      // Contact link should be visible
-      expect(screen.getByText('Contact')).toBeInTheDocument();
-      
-      // Create Property link should not be visible (only for vendors)
-      expect(screen.queryByText('Create Property')).not.toBeInTheDocument();
-      
-      // Login link should not be visible
-      expect(screen.queryByText('Login')).not.toBeInTheDocument();
-      
-      // Notifications component should be rendered
-      expect(screen.getByTestId('notifications')).toBeInTheDocument();
-    });
+    await renderNavbarWithMockUser({ username: 'testuser', role: 'user' });
+    expect(screen.queryByText('Create Property')).not.toBeInTheDocument();
+    expect(screen.getByText('Contact')).toBeInTheDocument();
+    expect(screen.getByTestId('notifications')).toBeInTheDocument();
   });
 
   test('renders vendor navbar when logged in as vendor', async () => {
     // Mock successful login as vendor
-    axios.get.mockResolvedValueOnce({
-      data: {
-        user: {
-          username: 'vendoruser',
-          role: 'vendor'
-        }
-      }
-    });
-
-    render(
-      <BrowserRouter>
-        <Navbar />
-      </BrowserRouter>
-    );
-
-    // Wait for the auth check to complete
-    await waitFor(() => {
-      // Username should be displayed
-      expect(screen.getByText('Hello, vendoruser')).toBeInTheDocument();
-      
-      // Dashboard link should be visible
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
-      
-      // Create Property link should be visible for vendors
-      expect(screen.getByText('Create Property')).toBeInTheDocument();
-      
-      // Login link should not be visible
-      expect(screen.queryByText('Login')).not.toBeInTheDocument();
-    });
+    await renderNavbarWithMockUser({ username: 'vendoruser', role: 'vendor' });
+    expect(screen.getByText('Create Property')).toBeInTheDocument();
   });
 
   test('shows processing message when user has pending status', async () => {
