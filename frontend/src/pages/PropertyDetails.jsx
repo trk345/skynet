@@ -11,7 +11,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
-{/* Props and helper functions */}
 function PropertyImageGallery({ images = [] }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -464,7 +463,7 @@ Message.propTypes = {
     isError: PropTypes.bool,
 }
 
-{/* Property Details */}
+
 const PropertyDetails = () => {
   const { id } = useParams();
   const [property, setProperty] = useState(null);

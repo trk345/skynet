@@ -50,68 +50,6 @@ beforeEach(() => {
   });
 });
 
-const mockProperties = [
-  {
-    _id: '1',
-    name: 'Test Property',
-    description: 'Test Description',
-    address: 'Test Address',
-    price: 100,
-    type: 'Standard Room',
-    location: 'Test Location',
-    maxGuests: 2,
-    averageRating: 4,
-    reviewCount: 10,
-    bedrooms: 1,
-    bathrooms: 1,
-    squareFeet: '',
-    availability: {
-        startDate: null,
-        endDate: null,
-    },
-    mobile: '01234567891',
-    email: 'test@gmail.com',
-    status: 'available',
-    images: ['image1.jpg', 'image2.jpg'],
-    amenities: {
-      wifi: true,
-      parking: true,
-      breakfast: false,
-      tv: false,
-      kitchen: false,
-      airConditioning: true,
-      heating: false,
-      workspace: true
-    },
-  },
-  {
-    _id: '2',
-    name: 'Luxury Test Property',
-    address:'Luxury Test Address',
-    description: 'Luxury Test Description',
-    bedrooms: 2,
-    mobile: '01234567892',
-    email: 'test2@gmail.com',
-    bathrooms: 2,
-    price: 200,
-    type: 'Luxury Room',
-    location: 'Premium Location',
-    maxGuests: 4,
-    averageRating: 5,
-    reviewCount: 20,
-    status: 'booked',
-    images: [],
-    amenities: {
-        wifi: true,
-        parking: true,
-        breakfast: false,
-        tv: false,
-        kitchen: false,
-        airConditioning: true,
-        heating: false,
-        workspace: true    },
-  },
-];
 
 // PropertyImageGallery Tests
 describe('PropertyImageGallery Component', () => {

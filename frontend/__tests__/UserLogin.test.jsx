@@ -200,7 +200,6 @@ describe('UserLogin Component', () => {
 
   test('redirects to Google OAuth when clicking Google login button', () => {
     // Mock window.location
-    const locationAssignMock = vi.fn();
     delete window.location;
     window.location = { href: '' };
     

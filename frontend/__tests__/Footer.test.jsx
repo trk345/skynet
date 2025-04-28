@@ -1,8 +1,7 @@
 // frontend/__tests__/Footer.test.jsx
 import { describe, test, expect } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, render } from '@testing-library/react';
 import Footer from '../src/components/Footer'; // Adjust path as needed
-import { render } from '@testing-library/react';
 
 describe('Footer Component', () => {
   test('renders correctly with copyright information', () => {

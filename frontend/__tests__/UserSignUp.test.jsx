@@ -172,7 +172,6 @@ describe('UserSignup Component', () => {
   });
 
   test('redirects to Google OAuth when clicking Google signup button', () => {
-    const locationAssignMock = vi.fn();
     delete window.location;
     window.location = { href: '' };
 
