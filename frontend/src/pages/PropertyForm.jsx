@@ -476,7 +476,7 @@ const PropertyForm = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Basic Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-gray-700 mb-2">
                     Property Name* (maximum 15 characters)
                     {hasError('name') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.name}</span>
@@ -512,7 +512,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="description" className="block text-gray-700 mb-2">
                     Description* 
                     {hasError('description') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.description}</span>
@@ -537,7 +537,7 @@ const PropertyForm = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Location</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="location" className="block text-gray-700 mb-2">
                     City/Area* (maximum 25 characters)
                     {hasError('location') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.location}</span>
@@ -560,7 +560,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="address" className="block text-gray-700 mb-2">
                     Full Address*
                     {hasError('address') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.address}</span>
@@ -588,7 +588,7 @@ const PropertyForm = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Property Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="price" className="block text-gray-700 mb-2">
                     Price per Night*
                     {hasError('price') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.price}</span>
@@ -611,7 +611,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="bedrooms" className="block text-gray-700 mb-2">
                     Bedrooms*
                     {hasError('bedrooms') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.bedrooms}</span>
@@ -632,7 +632,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="bathrooms" className="block text-gray-700 mb-2">
                     Bathrooms*
                     {hasError('bathrooms') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.bathrooms}</span>
@@ -669,7 +669,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="maxGuests" className="block text-gray-700 mb-2">
                     Max Guests*
                     {hasError('maxGuests') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.maxGuests}</span>
@@ -735,7 +735,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="endDate" className="block text-gray-700 mb-2">
                     Available Until
                     {hasError('endDate') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.endDate}</span>
@@ -763,7 +763,7 @@ const PropertyForm = () => {
               <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Your Contact</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="mobile" className="block text-gray-700 mb-2">
                     Mobile*
                     {hasError('mobile') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.mobile}</span>
@@ -785,7 +785,7 @@ const PropertyForm = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-gray-700 mb-2">
                     Email*
                     {hasError('email') && (
                       <span className="text-red-500 ml-1 text-sm">{errors.email}</span>
@@ -842,6 +842,7 @@ const PropertyForm = () => {
                   />
                   <button
                     type="button"
+                    aria-label="remove image"
                     onClick={(e) => removeImage(index, e)}
                     className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition cursor-pointer"
                   >
