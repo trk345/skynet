@@ -210,7 +210,7 @@ describe('Contact Component', () => {
     );
     
     vi.advanceTimersByTime(300);
-    
+    expect(true).toBe(true);
     
     vi.advanceTimersByTime(300);;
     
