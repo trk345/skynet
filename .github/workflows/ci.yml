@@ -56,25 +56,20 @@ jobs:
       working-directory: ./frontend
       run: npm ci
 
-    # Create an empty test file to prevent test runner from failing
-    - name: Create placeholder test file
-      working-directory: ./frontend
-      run: |
-        mkdir -p src/__tests__
-        echo 'import { describe, it, expect } from "vitest";
-        
-        describe("Placeholder test", () => {
-          it("should pass", () => {
-            expect(true).toBe(true);
-          });
-        });' > src/__tests__/placeholder.test.jsx
-
-    - name: Run frontend tests
+    # Run tests with coverage
+    - name: Run frontend tests with coverage
       working-directory: ./frontend
       timeout-minutes: 5
       env:
         VITE_API_URL: http://localhost:4000
-      run: npm test
+      run: npm run test:coverage
+
+    # Verify coverage file exists
+    - name: Verify coverage file
+      working-directory: ./frontend
+      run: |
+        ls -la coverage
+        cat coverage/lcov.info || echo "lcov.info not found"
 
     - name: Build frontend
       working-directory: ./frontend
@@ -90,6 +85,7 @@ jobs:
         path: |
           backend/coverage/lcov.info
           frontend/coverage/lcov.info
+
 
   sonarcloud:
     needs: test
