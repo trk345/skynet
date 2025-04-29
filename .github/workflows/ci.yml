@@ -113,7 +113,7 @@ jobs:
       with:
         projectBaseDir: .
         args: >
-          -Dsonar.organization=Learnathon-By-Geeky-Solutions
+          -Dsonar.organization=learnathon-By-Geeky-Solutions
           -Dsonar.projectKey=Learnathon-By-Geeky-Solutions_skynet
           -Dsonar.projectName=skynet
           -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info,frontend/coverage/lcov.info
