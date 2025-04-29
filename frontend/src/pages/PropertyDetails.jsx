@@ -11,7 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
-function PropertyImageGallery({ images = [] }) {
+export function PropertyImageGallery({ images = [] }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -52,6 +52,7 @@ function PropertyImageGallery({ images = [] }) {
                     {currentImageIndex > 0 && (
                         <button 
                             type="button"
+                            aria-label="previous image"
                             onClick={handlePrev}
                             className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
                         >
@@ -62,6 +63,7 @@ function PropertyImageGallery({ images = [] }) {
                     {currentImageIndex < (images.length -1) && (
                         <button 
                             type="button"
+                            aria-label="next image"
                             onClick={handleNext}
                             className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300 opacity-0 group-hover:opacity-100"
                         >
@@ -73,6 +75,8 @@ function PropertyImageGallery({ images = [] }) {
 
                 {/* Expand Button */}
                 <button 
+                    type="button"
+                    aria-label="maximize image"
                     onClick={() => setIsModalOpen(true)}
                     className="absolute top-4 right-4 bg-white/70 cursor-pointer hover:bg-white/90 p-2 rounded-full shadow-md transition-all duration-300"
                 >
@@ -174,6 +178,8 @@ function PropertyImageGallery({ images = [] }) {
 
                     {/* Close Button */}
                     <button 
+                        type="button"
+                        aria-label="close modal"
                         onClick={() => setIsModalOpen(false)}
                         className="absolute top-0 right-0 m-4 text-white bg-white/20 cursor-pointer hover:bg-white/40 p-2 rounded-full transition-all duration-300"
                     >
@@ -197,13 +203,13 @@ PropertyImageGallery.propTypes = {
 };
 
 
-const formatDate = (dateString) => {
+export const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
-const renderStars = (rating) => {
+export const renderStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
         stars.push(
@@ -217,7 +223,7 @@ const renderStars = (rating) => {
     return stars;
 };
 
-const ReviewCard = ({ review }) => (
+export const ReviewCard = ({ review }) => (
     <div className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
       <div className="flex justify-between items-start mb-2">
         <div>
@@ -240,7 +246,7 @@ ReviewCard.propTypes = {
     }).isRequired, 
 };
 
-const BookedDateItem = ({ date, userId, onUnbook }) => {
+export const BookedDateItem = ({ date, userId, onUnbook }) => {
     const isBooker = date.userId === userId;
     return (
       <li className="flex items-center justify-between py-2 px-4 bg-gray-100 rounded-md shadow-sm">
@@ -271,7 +277,7 @@ BookedDateItem.propTypes = {
     onUnbook: PropTypes.func.isRequired,
 };
 
-const BookingForm = ({ bookingDates, setBookingDates, handleInputChange, handleBooking, property, user }) => {
+export const BookingForm = ({ bookingDates, setBookingDates, handleInputChange, handleBooking, property, user }) => {
     const totalNights = bookingDates.checkIn && bookingDates.checkOut
         ? Math.ceil((new Date(bookingDates.checkOut) - new Date(bookingDates.checkIn)) / (1000 * 60 * 60 * 24))
         : 0;
@@ -344,7 +350,7 @@ BookingForm.propTypes = {
     }).isRequired,
 };
 
-const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
+export const DateInput = ({ label, selected, onChange, minDate, maxDate, excludeIntervals }) => (
     <div>
       <label htmlFor={`${label}-input`} className="block text-gray-700 mb-2">{label}</label>
       <DatePicker
@@ -374,7 +380,7 @@ DateInput.propTypes = {
     ),
 };
   
-const GuestInput = ({ value, onChange, max }) => (
+export const GuestInput = ({ value, onChange, max }) => (
     <div>
       <label htmlFor="guests-input" className="block text-gray-700 mb-2">Guests</label>
       <div className="relative">
@@ -399,7 +405,7 @@ GuestInput.propTypes = {
     max: PropTypes.number.isRequired,
 };
     
-const PriceSummary = ({ price, nights, total }) => (
+export const PriceSummary = ({ price, nights, total }) => (
     <div className="pt-4 border-t border-gray-200">
       <div className="flex justify-between mb-2">
         <span>Price per night</span>
@@ -426,9 +432,10 @@ PriceSummary.propTypes = {
     total: PropTypes.number.isRequired,
   };
 
-const BookButton = ({ isEnabled, onClick, user }) => (
+export const BookButton = ({ isEnabled, onClick, user }) => (
     <button
       type="button"
+      aria-label="book button"
       onClick={onClick}
       disabled={!isEnabled}
       className={`w-full py-3 rounded-md text-white font-semibold ${
@@ -451,7 +458,7 @@ BookButton.propTypes = {
     }), // Optional user object
 };
 
-const Message = ({ text, isItalic = false, isError = false }) => (
+export const Message = ({ text, isItalic = false, isError = false }) => (
     <p className={`text-sm mt-2 text-center ${isItalic ? 'italic text-gray-600' : ''} ${isError ? 'text-red-500' : ''}`}>
       {text}
     </p>
@@ -464,7 +471,7 @@ Message.propTypes = {
 }
 
 
-const PropertyDetails = () => {
+export const PropertyDetails = () => {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -942,4 +949,3 @@ const PropertyDetails = () => {
     );
 };
 
-export default PropertyDetails;
