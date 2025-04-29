@@ -172,6 +172,11 @@ const signup = async (req, res) => {
 // Protected route to fetch user info
 const authMe = async (req, res) => {
   try {
+    const { userId } = req.user || {};
+
+    if (!userId) {
+      throw new Error('Missing userId in token payload');
+    }
     // `req.user` is already set by `authenticateUser` middleware
     const user = await User.findById(req.user.userId).select("-password");
 
