@@ -1,7 +1,7 @@
 import { Home } from './pages/Home.jsx'
 import Contact from './pages/Contact.jsx'
 import PropertyForm from './pages/PropertyForm.jsx'
-import PropertyDetails from './pages/PropertyDetails.jsx'
+import { PropertyDetails } from './pages/PropertyDetails.jsx'
 import AdminLoginPage from './pages/AdminLogin.jsx'
 import UserSignUpPage from './pages/UserSignup.jsx'
 import UserLoginPage from './pages/UserLogin.jsx'
