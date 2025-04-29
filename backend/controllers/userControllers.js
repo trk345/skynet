@@ -2,24 +2,24 @@ const { User } = require('../models/userSchemas');
 const { VendorRequest } = require('../models/vendorRequestSchemas');
 const { Booking } = require('../models/bookingSchemas');
 const { Property } = require('../models/propertySchemas'); 
-const sendNotification = require('../utils/sendNotification'); // import it at the top
+const sendNotification = require('../utils/sendNotification'); 
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 
 // Middleware to verify JWT and extract userId
-const verifyUser = (req, res) => {
+function verifyUser(req, res) {
     try {
         const token = req.cookies.token;
-        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        if (!token) throw new Error("Unauthorized");
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         return decoded.userId;
     } catch (error) {
         console.error("JWT verification error:", error);
-        return res.status(401).json({ error: 'Unauthorized' });
+        throw new Error("Unauthorized");
     }
-};
+}
 
 // Secure route: Post Vendor Requests
 const postVendorRequest = async (req, res) => {
@@ -29,7 +29,7 @@ const postVendorRequest = async (req, res) => {
     try {
         const userId = verifyUser(req, res);
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            throw new Error("Unauthorized");
         }
         const requesterID = userId;
         const { firstName, lastName, email, mobile, message } = req.body;
@@ -58,7 +58,11 @@ const postVendorRequest = async (req, res) => {
     } catch (error) {
         await session.abortTransaction(); // Rollback on error
         console.error("Error saving request", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        if (error.message === "Unauthorized") {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        return res.status(500).json({ error: "Internal Server Error" });
     } finally {
         session.endSession(); // Clean up session
     }
