@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { Home, PropertyImageGallery } from '../src/pages/Home';
 import axios from 'axios';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 // Mock the modules
 vi.mock('axios');
@@ -54,31 +54,31 @@ beforeEach(() => {
 
 // PropertyImageGallery Tests
 describe('PropertyImageGallery Component', () => {
-  it('renders default icon when no images are provided', () => {
+  test('renders default icon when no images are provided', () => {
     render(<PropertyImageGallery />);
     expect(screen.getByText('Building')).toBeDefined();
   });
 
-  it('renders image when images are provided', () => {
+  test('renders image when images are provided', () => {
     render(<PropertyImageGallery images={['image1.jpg']} />);
     const image = screen.getByAltText('Property 1');
     expect(image).toBeDefined();
     expect(image.src).toContain('http://localhost:4000/image1.jpg');
   });
 
-  it('does not show navigation arrows with a single image', () => {
+  test('does not show navigation arrows with a single image', () => {
     render(<PropertyImageGallery images={['image1.jpg']} />);
     expect(screen.queryByText('ChevronLeft')).toBeNull();
     expect(screen.queryByText('ChevronRight')).toBeNull();
   });
 
-  it('shows navigation arrows and counter with multiple images', () => {
+  test('shows navigation arrows and counter with multiple images', () => {
     render(<PropertyImageGallery images={['image1.jpg', 'image2.jpg']} />);
     expect(screen.getByText('ChevronRight')).toBeDefined();
     expect(screen.getByText('1 / 2')).toBeDefined();
   });
 
-  it('navigates to next image when next button is clicked', () => {
+  test('navigates to next image when next button is clicked', () => {
     render(<PropertyImageGallery images={['image1.jpg', 'image2.jpg']} />);
     
     const nextButton = screen.getByText('ChevronRight').closest('button');
@@ -89,7 +89,7 @@ describe('PropertyImageGallery Component', () => {
     expect(screen.queryByText('ChevronRight')).toBeNull(); // Next button should be gone at the end
   });
 
-  it('navigates to previous image when previous button is clicked', () => {
+  test('navigates to previous image when previous button is clicked', () => {
     render(<PropertyImageGallery images={['image1.jpg', 'image2.jpg']} />);
     
     // First navigate to second image
@@ -105,7 +105,7 @@ describe('PropertyImageGallery Component', () => {
     expect(screen.queryByText('ChevronLeft')).toBeNull(); // Prev button should be gone at the start
   });
 
-  it('prevents event propagation when clicking navigation buttons', () => {
+  test('prevents event propagation when clicking navigation buttons', () => {
     const mockEvent = {
       preventDefault: vi.fn(),
       stopPropagation: vi.fn()

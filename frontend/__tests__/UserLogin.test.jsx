@@ -22,7 +22,7 @@ vi.mock('lucide-react', () => ({
 
 describe('UserLogin Component', () => {
   async function renderLoginAndSubmit({ fetchMock, expectedErrorText }) {
-    global.fetch.mockImplementationOnce(fetchMock);
+    globalThis.fetch.mockImplementationOnce(fetchMock);
   
     render(
       <MemoryRouter>
@@ -53,8 +53,8 @@ describe('UserLogin Component', () => {
     vi.clearAllMocks();
     
     // Mock fetch
-    global.fetch = vi.fn();
-    global.window.location.href = '';
+    globalThis.fetch = vi.fn();
+    globalThis.window.location.href = '';
     
     // Reset console error spy after each test
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -108,7 +108,7 @@ describe('UserLogin Component', () => {
 
   test('handles successful login and redirects', async () => {
     // Mock successful fetch response
-    global.fetch.mockResolvedValueOnce({
+    globalThis.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ user: { id: '123', name: 'Test User' } })
     });
@@ -129,7 +129,7 @@ describe('UserLogin Component', () => {
     
     await waitFor(() => {
       // Verify fetch was called with the right arguments
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:4000/api/auth/login',
         {
           method: 'POST',
@@ -146,7 +146,7 @@ describe('UserLogin Component', () => {
 
   test('handles login error with server message', async () => {
     // Mock failed fetch response with specific error message
-    global.fetch.mockResolvedValueOnce({
+    globalThis.fetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({ message: 'Invalid credentials' })
     });

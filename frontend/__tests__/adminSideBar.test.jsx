@@ -3,7 +3,7 @@ import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
-import AdminSideBar from '../src/components/AdminSideBar'; // Adjust path as needed
+import AdminSideBar from '../src/components/adminSideBar'; // Adjust path as needed
 import { renderWithRouter } from './testUtils';
 
 // Setup mocks

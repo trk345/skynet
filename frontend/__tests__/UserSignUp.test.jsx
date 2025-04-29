@@ -15,7 +15,7 @@ vi.mock('react-router-dom', async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  global.fetch = vi.fn();
+  globalThis.fetch = vi.fn();
   vi.stubGlobal('import.meta', { 
     env: { VITE_API_URL: 'http://localhost:4000' }
   });
@@ -52,8 +52,8 @@ describe('UserSignup Component', () => {
     });
 
     vi.clearAllMocks();
-    global.fetch = vi.fn();
-    global.window.location.href = '';
+    globalThis.fetch = vi.fn();
+    globalThis.window.location.href = '';
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -105,7 +105,7 @@ describe('UserSignup Component', () => {
   });
   
   test('handles successful signup and redirects', async () => {
-    global.fetch.mockResolvedValueOnce({
+    globalThis.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ user: { id: '123', username: 'testuser' } }),
     });
@@ -113,7 +113,7 @@ describe('UserSignup Component', () => {
     fillAndSubmitForm();
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:4000/api/auth/signup',
         expect.objectContaining({
           method: 'POST',
@@ -132,7 +132,7 @@ describe('UserSignup Component', () => {
   });
 
   test('handles signup error with server message', async () => {
-    global.fetch.mockResolvedValueOnce({
+    globalThis.fetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({ message: 'Email already exists' }),
     });
@@ -146,7 +146,7 @@ describe('UserSignup Component', () => {
   });
 
   test('handles signup error with default message', async () => {
-    global.fetch.mockResolvedValueOnce({
+    globalThis.fetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({}),
     });
@@ -160,7 +160,7 @@ describe('UserSignup Component', () => {
   });
 
   test('handles network error during signup', async () => {
-    global.fetch.mockRejectedValueOnce(new Error('Network error'));
+    globalThis.fetch.mockRejectedValueOnce(new Error('Network error'));
 
     fillAndSubmitForm();
 
