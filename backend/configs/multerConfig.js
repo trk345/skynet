@@ -2,27 +2,34 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Set storage engine for multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Ensure the 'uploads/' directory exists to prevent runtime errors
-    if (!fs.existsSync('uploads/')) {
-      fs.mkdirSync('uploads/', { recursive: true });
-    }
-    cb(null, 'uploads/'); // Folder where images will be stored
-  },
-  filename: (req, file, cb) => {
-    const originalName = file.originalname; // Get original file name
-    const extension = path.extname(originalName); // Get file extension
-    // Create unique filenames for uploaded images (timestamp + original name + extension)
-    cb(null, Date.now() + path.basename(originalName, extension) + path.extname(file.originalname));
-  }
-});
+const isTestEnv = process.env.NODE_ENV === 'test';
 
-// Set multer instance with file size limits and validation
+let storage;
+
+if (isTestEnv) {
+  // Use memoryStorage during tests
+  storage = multer.memoryStorage();
+} else {
+  // Use diskStorage in development and production
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      // Ensure the 'uploads/' directory exists
+      if (!fs.existsSync('uploads/')) {
+        fs.mkdirSync('uploads/', { recursive: true });
+      }
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      const originalName = file.originalname;
+      const extension = path.extname(originalName);
+      cb(null, Date.now() + path.basename(originalName, extension) + extension);
+    }
+  });
+}
+
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Max file size is 5MB
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
