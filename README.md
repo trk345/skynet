@@ -1,12 +1,12 @@
 # skynet
 
 ## Team Members
-- shihabmuhtasim (Team Leader)
-- trk345
-- RaiyanWasiSiddiky
+- Shihab Muhtasim: shihabmuhtasim (Team Leader)
+- Tawhidur Rahman Khan: trk345
+- Raiyan Wasi Siddiky: RaiyanWasiSiddiky
 
 ## Mentor
-- siam456
+- Hasibul Hasan: siam456
 
 # Room Booking and Management System
 
@@ -25,7 +25,6 @@ Welcome to the **Room Booking and Management System** — a premium platform des
 - 🛠️ **Admin Dashboard**: Manage users, properties, bookings, reviews, and vendor approval requests.
 - 🌟 **Ratings and Reviews**: Users can leave feedback and star ratings for booked properties.
 - 🖼️ **Property Listing**: Rich property cards displaying image galleries, availability status, price, name, location, rating, and number of reviews.
-- 🚀 **Real-Time Updates**: Seamless management and display of updated information across the platform.
 
 ---
 
@@ -58,7 +57,7 @@ Feel free to explore how we managed our project effectively!
 ## 🚀 Live Demo
 
 Check out the live application here: [skynet1.netlify.app](https://skynet1.netlify.app)
-
+** Please wait around 5-10 minutes and keep refreshing if properties don't load **
 ---
 
 ## 🛠️ Local Setup Instructions
@@ -115,6 +114,11 @@ Follow these steps to run the project locally:
      ```
 
 ---
+
+## 📄 License
+
+This project is licensed under the terms of the [MIT License](https://github.com/Learnathon-By-Geeky-Solutions/skynet/blob/main/LICENSE).  
+You are free to use, modify, and distribute this project for personal or commercial purposes, provided that the original license is included in all copies or substantial portions of the software.
 
 
 # Thank you for visiting! ✨
