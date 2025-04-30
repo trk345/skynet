@@ -1,0 +1,180 @@
+Welcome to the skynet wiki
+# 🏡 Room Booking and Management System Wiki
+
+Welcome to the official documentation of the **Room Booking and Management System**!  
+This platform allows users to search, book, and review rooms while providing vendors the ability to list and manage their properties.
+
+Please explore the sections below for detailed guides:
+
+- [🔧 Setup Guide](./Setup-Guide)
+- [🛒 Vendor Guidelines](./Vendor-Guidelines)
+- [🛡️ Admin Panel Overview](./Admin-Panel-Overview)
+- [📈 Analytics and Statistics](./Analytics-and-Statistics)
+- [📤 Image Upload and Management](./Image-Upload-and-Management)
+- [🛠️ Troubleshooting & FAQs](./Troubleshooting-and-FAQs)
+
+---
+
+# 🔧 Setup Guide
+
+Follow these steps to run the project locally:
+
+## Prerequisites
+- Node.js (v18 or above recommended)
+- npm
+- MongoDB Atlas or Local MongoDB
+- Google Developer Console Credentials (for OAuth)
+
+## 1. Clone the Repository
+
+```bash
+git clone <https://github.com/Learnathon-By-Geeky-Solutions/skynet/>
+cd <skynet>
+```
+
+## 2. Install Dependencies
+
+Open two terminals:
+   - For the frontend:
+     ```bash
+     cd frontend
+     npm install
+     ```
+   - For the backend:
+     ```bash
+     cd backend
+     npm install
+
+## 3. Environment variables
+Create a .env file in both frontend and backend directories.
+   
+   - **Frontend (`frontend/.env`)**:
+     ```bash
+     VITE_API_URL=<your-backend-api-url>
+     ```
+
+   - **Backend (`backend/.env`)**:
+     ```bash
+     PORT=<your-port>
+     MONGO_URI=<your-mongodb-connection-string>
+     GOOGLE_CLIENT_ID=<your-google-client-id>
+     GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+     GOOGLE_CLIENT_HOST=<your-google-redirect-uri>
+     GOOGLE_SERVER_HOST=<your-server-host>
+     SESSION_SECRET=<your-session-secret>
+     JWT_SECRET=<your-jwt-secret>
+     CSRF_SECRET=<your-csrf-secret>
+     ```
+## 4. Run The Project
+ - Run frontend
+```bash
+cd frontend
+npm run dev
+```
+
+ - Run backend
+```bash
+cd backend
+npm run dev
+```
+### The app should now be running locally at:
+
+Frontend: http://localhost:5173
+
+Backend API: http://localhost:4000
+
+# 🛒 Vendor Guidelines
+
+### How to Become a Vendor
+
+1. **Register/Login** as a normal user.
+2. **Request Vendor Access** via the Contact tab in the Navbar and fill out the form.
+3. Wait for the **admin to approve** your vendor request.
+
+Once approved:
+- You will get access to the **Vendor Dashboard**.
+- You can **Create, Edit, Delete** your own properties.
+
+### Vendor Dashboard Features
+
+- View your **Active Listings**.
+- **Add New Properties** with images, availability calendar, pricing, descriptions, and much more.
+- **Edit/Delete** existing listings.
+- View **Analytics**:
+  - Total Properties
+  - Average Rating
+  - Total Reviews
+
+**Note:** Vendors are responsible for the accuracy of their property information.
+
+# 🛡️ Admin Panel Overview
+
+Only Admins can access the Admin Dashboard.
+
+### Features:
+
+- View and manage **All Users** (Promote to Vendor, Delete).
+- View and manage **All Properties** (Edit, Delete).
+- View and manage **All Bookings**.
+- Manage **Reviews** (Remove abusive content).
+- Handle **Vendor Requests** (Approve/Deny).
+
+Admins can maintain platform integrity and oversee all activities from a centralized panel.
+
+# 📈 Analytics and Statistics
+
+### Vendor Analytics Dashboard:
+
+- **Total Properties**: Number of properties listed by you.
+- **Active Listings**: Number of properties currently available for booking.
+- **Average Rating**: Based on all reviews left on your properties.
+- **Total Reviews**: Total feedback received from users.
+
+### Admin Analytics:
+
+Admins have an overview of:
+- Total Users
+- Total Vendors
+- Total Bookings
+- Site-Wide Average Ratings
+
+This ensures the platform performance is always monitored.
+
+# 📤 Image Upload and Management
+
+Images are handled securely using **Multer** middleware on the backend.
+
+### Key Features:
+- Upload multiple images per property.
+- Images stored with unique names to prevent conflicts.
+- Optimized size and format.
+- Preview images in the property gallery on the frontend.
+
+**Note:** Ensure images are in `.jpg`, `.jpeg`, or `.png` format for smooth uploads.
+
+# 🛠️ Troubleshooting and FAQs
+
+### Common Issues:
+
+- **Frontend 404 Error?**
+  - Make sure VITE_API_URL is correctly pointing to your backend server.
+
+- **Google OAuth not working?**
+  - Check if your Google credentials and authorized redirect URIs are correctly set.
+
+- **Database connection error?**
+  - Verify your MONGO_URI is correct and MongoDB service is up.
+
+- **Images not uploading?**
+  - Ensure multer middleware is correctly configured and server has permission to store files.
+
+### FAQs:
+
+**Q: Can I book a property without logging in?**  
+A: No, you must be logged in to book a room.
+
+**Q: How do I become an admin?**  
+A: Admin roles are manually assigned from the database.
+
+**Q: Can I review a property without booking?**  
+A: No, only users who have completed a booking can leave a review.
