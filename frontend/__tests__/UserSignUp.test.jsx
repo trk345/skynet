@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, BrowserRouter } from 'react-router-dom';
 import UserSignup from '../src/pages/UserSignup'; // adjust path if needed
 
 // Mocks
@@ -204,5 +204,42 @@ describe('UserSignup Component', () => {
     form.dispatchEvent(submitEvent);
 
     expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it('should display error message when passwords do not match', async () => {
+    render(
+      <BrowserRouter>
+        <UserSignup />
+      </BrowserRouter>
+    );
+
+    // Fill in form fields
+    fireEvent.change(screen.getByPlaceholderText('Username'), {
+      target: { name: 'username', value: 'testuser' }
+    });
+    
+    fireEvent.change(screen.getByPlaceholderText('Email'), {
+      target: { name: 'email', value: 'test@example.com' }
+    });
+    
+    fireEvent.change(screen.getByPlaceholderText('Password'), {
+      target: { name: 'password', value: 'password123' }
+    });
+    
+    fireEvent.change(screen.getByPlaceholderText('Confirm Password'), {
+      target: { name: 'confirmPassword', value: 'differentpassword' }
+    });
+
+    // Submit the form
+    const buttons = screen.getAllByRole('button', { name: /sign up/i });
+    fireEvent.submit(buttons[0]);
+
+    // Verify error message is displayed
+    await waitFor(() => {
+      expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
+    });
+
+    // Verify that fetch was not called (since validation failed)
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
