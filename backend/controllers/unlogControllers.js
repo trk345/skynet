@@ -203,18 +203,22 @@ const logout = (req, res) => {
 const allowedTypes = ['Standard Room', 'Luxury Room', 'Business Suite', 'Apartment', 'Villa'];
 
 const sanitizeAndValidate = (value, type) => {
-  if (type === 'string') {
-    return typeof value === 'string' ? value.trim() : '';
+  switch (type) {
+    case 'string': {
+      const result = typeof value === 'string' ? value.trim() : '';
+      return String(result);
+    }
+    case 'number': {
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed; // Always return a number
+    }
+    case 'date': {
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? new Date(0) : date; // Always return a Date
+    }
+    default:
+      return null;
   }
-  if (type === 'number') {
-    const parsedValue = parseFloat(value);
-    return isNaN(parsedValue) ? null : parsedValue;
-  }
-  if (type === 'date') {
-    const date = new Date(value);
-    return isNaN(date.getTime()) ? null : date;
-  }
-  return null;
 };
 
 // Helper functions to apply filters
