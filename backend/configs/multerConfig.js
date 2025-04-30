@@ -41,3 +41,6 @@ const upload = multer({
 });
 
 module.exports = upload;
+
+// 👇 Export storage ONLY for test use (not affecting regular usage)
+module.exports._storage = storage;

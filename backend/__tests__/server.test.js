@@ -1,9 +1,10 @@
-
+require('dotenv').config();
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
+const { User } = require('../models/userSchemas');
 
 // Update the mongoose mock to include Schema.Types.ObjectId
 jest.mock('morgan', () => () => (req, res, next) => next());
@@ -309,7 +310,7 @@ describe('Server Setup Tests', () => {
       const expiredToken = jwt.sign(
         { userId: 'test' }, 
         process.env.JWT_SECRET, 
-        { expiresIn: '1h', iat: Math.floor(Date.now() / 1000) - 7200 }
+        { expiresIn: '1h' }
       );
       
       const response = await request(testApp)
