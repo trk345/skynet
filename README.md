@@ -44,8 +44,6 @@ Welcome to the **Room Booking and Management System** — a premium platform des
 Showcasing our commitment to a proper, streamlined process from the beginning, we created a database schema diagram to establish a clear initial direction.  
 Our application uses a flexible NoSQL schema design tailored for MongoDB. The diagram below illustrates the relationships between key collections such as **Users**, **Properties**, **Bookings**, and **Reviews**. It highlights embedded documents, referenced IDs, and field structures that power the room booking and management features.
 
-![Database Schema](./Schema_Diagram.drawio.png)
-
 📎 [Click here to view or download the full-size diagram](./Schema_Diagram.drawio.png)
 
 ## 📋 Project Management with Trello
