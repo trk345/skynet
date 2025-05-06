@@ -157,7 +157,7 @@ app.get(
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // None for Netlify/Render, Lax for local
         maxAge: 3600000, // 1 hour
       });
 
